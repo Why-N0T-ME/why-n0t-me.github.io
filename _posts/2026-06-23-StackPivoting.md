@@ -5,7 +5,7 @@ categories: [Research]
 tags: [System, StackPivoting, ROP]  
 description: Searching about Stack Pivoting and Advanced Exploitation  
 image:  
-    path: /assets/img/posts/StackPivoting/
+    path: /assets/img/posts/StackPivoting/logo.png
     alt: thumbnail
 ---
 ## Introduction
