@@ -1,11 +1,11 @@
 ---
 title: "Stack Pivoting"
-date: 2026-06-24  
+date: 2026-06-23 
 categories: [Research]  
 tags: [System, StackPivoting, ROP]  
 description: Searching about Stack Pivoting and Advanced Exploitation  
 image:  
-    path: /assets/img/posts/  
+    path: /assets/img/posts/StackPivoting/
     alt: thumbnail
 ---
 ## Introduction
