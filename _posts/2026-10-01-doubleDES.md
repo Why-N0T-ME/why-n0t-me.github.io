@@ -6,7 +6,7 @@ tags: [Dreamhack, Crypto, DES, Meet-in-the-Middle]
 description: double-DES 풀이 - 이중 DES 키 탐색을 Meet-in-the-Middle로 줄여 flag를 얻는다
 math: true
 image:
-    path: /assets/img/posts/Crypto/Challenges/double-des/thumbnail.png
+    path: /assets/img/posts/Crypto/Challenges/double-des/logo.png
     alt: thumbnail
 ---
 
