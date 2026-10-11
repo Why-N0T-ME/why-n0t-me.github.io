@@ -43,13 +43,12 @@ stockreport 381 29
 
 검증 없이 명령어에 이어 붙여졌을 때, 셸은 `stockreport` 부분과 `echo TEST` 부분을 별개의 명령으로 해석할 수 있다. 응답에 `TEST`가 나타난다면 입력값이 명령어 실행 흐름에 영향을 주었을 가능성이 있다. 구분 기호와 동작은 운영체제와 셸에 따라 다르므로, 이 예시는 원리를 설명하기 위한 것이다.
 
-PortSwigger는 재고 확인 예시를 통해 사용자 입력이 셸 명령에 결합되는 구조와, 명령어 구분 기호를 통해 추가 명령이 실행될 수 있는 원리를 설명한다. 크리핵티브 5장도 OS 커맨드 인젝션과 SQL 인젝션의 핵심 차이를 공격 대상이 각각 운영체제와 데이터베이스라는 점으로 정리한다. [PortSwigger: OS Command Injection](https://portswigger.net/web-security/os-command-injection)
 
 ### 응답에 결과가 나타나는 경우와 Blind 취약점
 
 명령어 실행 결과가 HTTP 응답에 포함되면 결과를 직접 관찰할 수 있는 유형이다. 반면 **Blind OS Command Injection**은 명령어가 실행되더라도 그 출력이 응답에 표시되지 않는다. 예를 들어 서버가 입력을 사용해 이메일을 보내거나 백그라운드 작업을 실행하지만, 그 명령의 출력을 사용자에게 돌려주지 않을 수 있다.
 
-따라서 화면에 결과가 보이지 않는다는 사실만으로 취약점이 없다고 결론 내릴 수는 없다. 진단에서는 승인된 테스트 환경에서 응답 시간이나 안전하게 관찰할 수 있는 외부 상호작용 등으로 실행 여부를 확인할 수 있다. [PortSwigger: Blind OS Command Injection](https://portswigger.net/web-security/os-command-injection#blind-os-command-injection-vulnerabilities)
+따라서 화면에 결과가 보이지 않는다는 사실만으로 취약점이 없다고 결론 내릴 수는 없다. 진단에서는 승인된 테스트 환경에서 응답 시간이나 안전하게 관찰할 수 있는 외부 상호작용 등으로 실행 여부를 확인할 수 있다.
 
 ### Impact
 
@@ -69,7 +68,7 @@ PortSwigger는 재고 확인 예시를 통해 사용자 입력이 셸 명령에 
 - 셸 메타문자를 치환하거나 이스케이프하는 방식에만 의존하지 않는다. 이러한 처리는 누락이나 우회에 취약할 수 있다.
 - 애플리케이션은 필요한 최소 권한으로 실행한다.
 
-핵심은 “위험한 문자를 지우기”보다, 사용자가 입력한 데이터가 셸 문법으로 해석될 경로 자체를 없애는 것이다. [PortSwigger: OS Command Injection 방어](https://portswigger.net/web-security/os-command-injection#how-to-prevent-os-command-injection-attacks)
+핵심은 “위험한 문자를 지우기”보다, 사용자가 입력한 데이터가 셸 문법으로 해석될 경로 자체를 없애는 것이다.
 
 
 
@@ -121,13 +120,13 @@ https://example.com/memo?m=<script>/* PAYLOAD */</script>
 <p>memo: <script>/* PAYLOAD */</script></p>
 ```
 
-피해자가 공격자가 만든 링크를 열면 스크립트가 피해자의 브라우저에서 해당 애플리케이션의 세션 컨텍스트로 실행될 수 있다. 따라서 공격자는 피해자의 권한으로 작업을 수행하거나 피해자가 볼 수 있는 정보에 접근할 수 있다. 반사형 XSS는 보통 피해자가 공격자의 링크나 요청을 열도록 유도해야 한다. [PortSwigger: Reflected XSS](https://portswigger.net/web-security/cross-site-scripting/reflected)
+피해자가 공격자가 만든 링크를 열면 스크립트가 피해자의 브라우저에서 해당 애플리케이션의 세션 컨텍스트로 실행될 수 있다. 따라서 공격자는 피해자의 권한으로 작업을 수행하거나 피해자가 볼 수 있는 정보에 접근할 수 있다. 반사형 XSS는 보통 피해자가 공격자의 링크나 요청을 열도록 유도해야 한다.
 
 #### Reflected XSS 분석 시 확인할 점
 
 입력값이 검색 결과 화면에 표시된다는 사실만으로는 반사형 XSS라고 단정할 수 없다. 서버가 입력값을 응답에 포함했을 수도 있고, 브라우저의 JavaScript가 입력값을 읽어 화면을 만들었을 수도 있기 때문이다.
 
-크리핵티브의 실습은 검색어를 입력한 뒤 응답 내용을 확인해 이 차이를 살펴본다. 입력값이 응답에 포함되어 서버 측에서 동적 페이지를 구성했다면 반사형 XSS 가능성을 확인한다. 응답에는 입력값이 없는데 화면에는 표시된다면, 클라이언트 측 JavaScript가 DOM을 구성하는지 살펴볼 필요가 있다.
+실습은 검색어를 입력한 뒤 응답 내용을 확인해 이 차이를 살펴본다. 입력값이 응답에 포함되어 서버 측에서 동적 페이지를 구성했다면 반사형 XSS 가능성을 확인한다. 응답에는 입력값이 없는데 화면에는 표시된다면, 클라이언트 측 JavaScript가 DOM을 구성하는지 살펴볼 필요가 있다.
 
 또한 테스트용 스크립트가 실행되었는지 확인할 때 쿠키 값을 경고창에 표시하는 방식만 사용하면 안 된다. 쿠키에 `HttpOnly`가 설정되어 있으면 JavaScript에서 쿠키를 읽을 수 없기 때문이다. 쿠키가 표시되지 않더라도 스크립트 실행 자체는 성공했을 수 있으므로, 쿠키 접근 여부와 XSS 발생 여부를 구분해야 한다.
 
@@ -149,13 +148,13 @@ POST /post/comment HTTP/1.1
 Host: vulnerable-website.com
 Content-Length: 100
 
-postId=3&comment=This+post+was+extremely+helpful.&name=Carlos+Montoya&email=carlos%40normal-user.net
+postId=3&comment=This+Web+Is-Vulnerable.&name=JB+Montoya&email=JB%40normal-user.net
 ```
 
 댓글이 저장된 뒤 블로그 페이지는 방문자에게 다음과 같은 응답을 반환할 수 있다.
 
 ```html
-<p>This post was extremely helpful.</p>
+<p>This Web Is Vulnerable.</p>
 ```
 
 애플리케이션이 댓글을 안전하게 처리하지 않는다면, 공격자가 스크립트가 포함된 댓글을 제출할 수 있다.
@@ -170,7 +169,7 @@ comment=<script>/* PAYLOAD */</script>
 <p><script>/* PAYLOAD */</script></p>
 ```
 
-이 페이지를 방문하는 사용자의 브라우저에서 스크립트가 실행될 수 있다. 저장형 XSS는 공격자가 애플리케이션 안에 악성 입력을 저장해 두므로, 피해자가 공격자의 외부 링크를 열도록 유도하지 않아도 공격이 전달될 수 있다. [PortSwigger: Stored XSS](https://portswigger.net/web-security/cross-site-scripting/stored)
+이 페이지를 방문하는 사용자의 브라우저에서 스크립트가 실행될 수 있다. 저장형 XSS는 공격자가 애플리케이션 안에 악성 입력을 저장해 두므로, 피해자가 공격자의 외부 링크를 열도록 유도하지 않아도 공격이 전달될 수 있다.
 
 ### DOM-based XSS
 
@@ -189,7 +188,7 @@ document.getElementById("searchResult").innerHTML =
   "검색어: " + keyword;
 ```
 
-`innerHTML`은 값을 일반 텍스트가 아니라 HTML로 해석한다. 따라서 신뢰할 수 없는 입력이 이 sink까지 안전한 처리 없이 전달되면 브라우저가 입력을 HTML로 해석해 스크립트 실행으로 이어질 수 있다. 크리핵티브 6장의 실습은 URL에서 `keyword`를 읽고, 문자열에 연결한 뒤 `innerHTML`을 통해 검색 결과 영역에 넣는 흐름을 보여 준다. 즉, 취약점의 핵심은 입력값이 클라이언트 코드에서 위험한 sink까지 전달되는 경로다. [PortSwigger: DOM-based XSS](https://portswigger.net/web-security/cross-site-scripting/dom-based)
+`innerHTML`은 값을 일반 텍스트가 아니라 HTML로 해석한다. 따라서 신뢰할 수 없는 입력이 이 sink까지 안전한 처리 없이 전달되면 브라우저가 입력을 HTML로 해석해 스크립트 실행으로 이어질 수 있다. 크리핵티브 6장의 실습은 URL에서 `keyword`를 읽고, 문자열에 연결한 뒤 `innerHTML`을 통해 검색 결과 영역에 넣는 흐름을 보여 준다. 즉, 취약점의 핵심은 입력값이 클라이언트 코드에서 위험한 sink까지 전달되는 경로다.
 
 #### Reflected XSS와의 차이
 
@@ -197,7 +196,6 @@ document.getElementById("searchResult").innerHTML =
 
 DOM 기반 XSS를 확인할 때는 개발자 도구로 실행 후 DOM을 살펴보고, 입력값이 어떤 JavaScript 코드와 sink를 거치는지 확인한다. 페이지 소스만 보면 JavaScript 실행 뒤 변경된 DOM을 놓칠 수 있다. 입력값이 DOM에 나타나지 않는 경우에는 디버거를 사용해 JavaScript 실행 흐름에서 source가 sink로 전달되는지도 확인한다.
 
-[PortSwigger: DOM 기반 취약점의 Source와 Sink](https://portswigger.net/web-security/dom-based)
 
 ### XSS Context
 
@@ -211,7 +209,7 @@ XSS 테스트에서 **컨텍스트(context)**란 사용자 입력이 응답이�
 - **URL:** 입력값이 링크의 `href` 같은 URL 속성에 들어가는 경우. 허용되는 프로토콜도 확인해야 한다.
 - **DOM:** 클라이언트 측 코드가 URL이나 다른 입력을 읽어 페이지의 DOM에 넣는 경우
 
-따라서 입력값이 응답에 보이는지만 확인해서는 충분하지 않다. 값이 HTML이나 JavaScript로 해석되는지, 일반 텍스트로 처리되는지, 애플리케이션이 어떤 변환을 적용하는지 함께 살펴야 한다. [PortSwigger: XSS 컨텍스트](https://portswigger.net/web-security/cross-site-scripting/contexts)
+따라서 입력값이 응답에 보이는지만 확인해서는 충분하지 않다. 값이 HTML이나 JavaScript로 해석되는지, 일반 텍스트로 처리되는지, 애플리케이션이 어떤 변환을 적용하는지 함께 살펴야 한다.
 
 ### Impact of XSS
 
@@ -219,7 +217,7 @@ XSS로 실행되는 스크립트가 피해자의 브라우저에서 애플리케
 
 실제 영향은 애플리케이션의 기능과 보유 데이터, 공격 대상 사용자의 권한에 따라 달라진다. 공개 정보만 제공하는 사이트에서는 영향이 제한적일 수 있지만, 금융·이메일·의료 정보 등을 처리하는 서비스에서는 피해가 심각해질 수 있다. 관리자 계정이 공격받으면 애플리케이션의 기능과 사용자 데이터 전반이 위협받을 수 있다.
 
-반사형 XSS는 보통 피해자가 공격자가 만든 링크나 요청을 열도록 유도해야 한다. 저장형 XSS는 악성 입력이 애플리케이션에 저장되어 해당 페이지를 방문하는 사용자에게 전달될 수 있으므로 더 많은 사용자를 공격할 가능성이 있다. [PortSwigger: XSS 영향](https://portswigger.net/web-security/cross-site-scripting)
+반사형 XSS는 보통 피해자가 공격자가 만든 링크나 요청을 열도록 유도해야 한다. 저장형 XSS는 악성 입력이 애플리케이션에 저장되어 해당 페이지를 방문하는 사용자에게 전달될 수 있으므로 더 많은 사용자를 공격할 가능성이 있다.
 
 ### XSS Mitigation
 
@@ -232,5 +230,3 @@ XSS 방어의 핵심은 **출력 위치에 맞는 인코딩**과 **안전한 DOM
 5. **입력 저장 전후의 처리 지점을 확인한다.** 크리핵티브의 시큐어 코딩 실습에서는 게시글의 제목과 내용이 검증 없이 저장되고 출력되는 부분을 찾아 대응한다. 다만 인코딩은 실제로 출력되는 컨텍스트에 맞춰 적용해야 하며, 입력 시점의 처리만으로 모든 출력 경로를 안전하게 만들 수 있는 것은 아니다.
 6. **CSP와 응답 헤더를 추가 방어층으로 사용한다.** Content Security Policy(CSP)는 스크립트 실행과 리소스 로드를 제한해 남아 있는 취약점의 피해를 줄일 수 있지만, 출력 인코딩이나 안전한 DOM 처리를 대신하지는 않는다. HTML이 아닌 응답에는 의도한 형식으로 해석되도록 올바른 `Content-Type`과 `X-Content-Type-Options` 헤더도 설정한다.
 7. **쿠키에 `HttpOnly`를 적용한다.** JavaScript를 통한 쿠키 읽기를 제한해 쿠키 탈취 위험을 낮출 수 있다. 크리핵티브의 실습도 `HttpOnly` 설정에 따라 JavaScript에서 쿠키가 읽히지 않는 것을 보여 준다. 다만 `HttpOnly`는 XSS 자체를 막거나 피해자의 브라우저에서 악성 스크립트가 다른 작업을 하는 것을 방지하지는 않으므로, 출력 인코딩과 안전한 DOM 처리를 함께 적용해야 한다.
-
-[PortSwigger: XSS 방어](https://portswigger.net/web-security/cross-site-scripting/preventing)
