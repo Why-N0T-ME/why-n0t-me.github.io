@@ -1,0 +1,9 @@
+<footer class="ow-foot">
+  <span class="ow-copy">&copy; {{ site.time | date: '%Y' }} {{ site.social.name }}</span>
+  <span class="ow-keys">
+    {%- if page.layout == 'post' -%}
+    <span><kbd>←</kbd><kbd>→</kbd> 글 이동</span>
+    {%- endif -%}
+    <span><kbd>ESC</kbd> 설정</span>
+  </span>
+</footer>

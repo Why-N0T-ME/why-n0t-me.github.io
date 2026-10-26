@@ -1,0 +1,34 @@
+---
+layout: default
+---
+{%- assign by_year = site.posts | group_by_exp: 'post', "post.date | date: '%Y'" -%}
+<div class="ow-wrap">
+  <header class="ow-pagehead">
+    <span class="ow-tag">시간순 기록</span>
+    <h1 class="ow-pagetitle">Archives</h1>
+    <p class="ow-pagesub">전체 글 {{ site.posts | size }}개</p>
+  </header>
+
+  {%- for y in by_year -%}
+  <section class="ow-panel ow-year" aria-labelledby="y-{{ y.name }}">
+    <h2 class="ow-ph" id="y-{{ y.name }}">{{ y.name }}<small>{{ y.items | size }}</small></h2>
+    {%- assign by_month = y.items | group_by_exp: 'post', "post.date | date: '%m'" -%}
+    {%- for m in by_month -%}
+    <div class="ow-month">
+      <div class="ow-month-name">{{ m.name }}월</div>
+      <ul class="ow-month-list">
+        {%- for post in m.items -%}
+        {%- assign a_cat = post.categories | first -%}
+        {%- assign a_meta = site.data.categories | where: 'name', a_cat | first -%}
+        <li class="ow-tl" style="--c1:{{ a_meta.from | default: '#1e6fd9' }}">
+          <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: '%m.%d' }}</time>
+          <a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
+          <span class="ow-chip-cat">{{ a_cat }}</span>
+        </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+    {%- endfor -%}
+  </section>
+  {%- endfor -%}
+</div>

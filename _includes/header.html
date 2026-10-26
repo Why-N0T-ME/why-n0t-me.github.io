@@ -1,0 +1,80 @@
+{%- assign ow_cats = site.data.categories -%}
+{%- assign ow_nav = '' -%}
+{%- if page.layout == 'post' or page.url contains '/categories/' -%}
+  {%- assign ow_nav = 'categories' -%}
+{%- elsif page.url contains '/archives/' -%}
+  {%- assign ow_nav = 'archives' -%}
+{%- elsif page.url contains '/tags/' -%}
+  {%- assign ow_nav = 'tags' -%}
+{%- elsif page.url contains '/about/' -%}
+  {%- assign ow_nav = 'about' -%}
+{%- elsif page.url contains '/blog/' -%}
+  {%- assign ow_nav = 'blog' -%}
+{%- endif -%}
+
+<header class="ow-bar">
+  <a class="ow-home" href="{{ '/' | relative_url }}" aria-label="홈">
+    <svg class="ow-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg>
+  </a>
+
+  <nav class="ow-nav" aria-label="주 메뉴">
+    <div class="ow-dd" data-dd>
+      <button type="button" class="ow-navlink{% if ow_nav == 'categories' %} is-active{% endif %}" aria-haspopup="true" aria-expanded="false" aria-controls="ow-catmenu" data-dd-btn>Categories</button>
+      <ul class="ow-dd-menu" id="ow-catmenu">
+        {%- for c in ow_cats -%}
+          {%- assign c_n = site.categories[c.name] | size -%}
+          {%- assign c_slug = c.name | slugify | url_encode -%}
+          <li>
+            {%- if c_n > 0 -%}
+            <a class="ow-dd-item" href="{{ '/categories/' | append: c_slug | append: '/' | relative_url }}" style="--c1:{{ c.from }};--c2:{{ c.to }}"><i class="ow-dot" aria-hidden="true"></i><span>{{ c.name }}</span><b>{{ c_n }}</b></a>
+            {%- else -%}
+            <span class="ow-dd-item is-empty" style="--c1:{{ c.from }};--c2:{{ c.to }}"><i class="ow-dot" aria-hidden="true"></i><span>{{ c.name }}</span><b>0</b></span>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+    <a class="ow-navlink{% if ow_nav == 'archives' %} is-active{% endif %}" href="{{ '/archives/' | relative_url }}">Archives</a>
+    <a class="ow-navlink{% if ow_nav == 'tags' %} is-active{% endif %}" href="{{ '/tags/' | relative_url }}">Tags</a>
+  </nav>
+
+  <a class="ow-play{% if ow_nav == 'blog' %} is-active{% endif %}" href="{{ '/blog/' | relative_url }}"><span>All Posts</span></a>
+
+  <div class="ow-tools">
+    <a class="ow-stat" href="{{ '/categories/' | relative_url }}">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4h20L12 21z" fill="#3fd0ff"/></svg>
+      <span class="ow-stat-t"><b>{{ ow_cats | size }}</b><span>Categories</span></span>
+    </a>
+    <a class="ow-stat" href="{{ '/blog/' | relative_url }}">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z" fill="#f99e1a"/></svg>
+      <span class="ow-stat-t"><b>{{ site.posts | size }}</b><span>All Posts</span></span>
+    </a>
+    <a class="ow-ico" href="{{ '/blog/' | relative_url }}" data-random aria-label="랜덤 글 보기">
+      <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l9-5 9 5v9l-9 5-9-5z" fill="#ffd23f"/><path d="M3 8l9 5 9-5M12 13v9" fill="none" stroke="#7a4a00" stroke-width="1.4"/></svg>
+    </a>
+    <a class="ow-ico" href="{{ '/archives/' | relative_url }}" aria-label="아카이브">
+      <svg class="ow-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M8 14l-2 8 6-3 6 3-2-8"/></svg>
+    </a>
+    <a class="ow-profile{% if ow_nav == 'about' %} is-active{% endif %}" href="{{ '/about/' | relative_url }}" aria-label="소개">
+      <img src="{{ site.avatar_small | relative_url }}" alt="프로필 사진" width="64" height="64">
+    </a>
+    <button type="button" class="ow-ico" id="ow-settings-btn" aria-label="설정" aria-haspopup="dialog" aria-expanded="false" aria-controls="ow-settings">
+      <svg class="ow-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="ow-settings" id="ow-settings" role="dialog" aria-label="설정" hidden>
+  <div class="ow-settings-title">설정</div>
+  <div class="ow-set-row" data-fs-row>
+    <span id="ow-fs-label">전체화면</span>
+    <button type="button" class="ow-btn" data-fs-toggle aria-labelledby="ow-fs-label" aria-pressed="false">켜기</button>
+  </div>
+  <div class="ow-set-row">
+    <span id="ow-theme-label">화면 모드</span>
+    <span class="ow-seg" role="group" aria-labelledby="ow-theme-label">
+      <button type="button" class="ow-btn" data-theme-set="dark" aria-pressed="true">다크</button>
+      <button type="button" class="ow-btn" data-theme-set="light" aria-pressed="false">라이트</button>
+    </span>
+  </div>
+</div>

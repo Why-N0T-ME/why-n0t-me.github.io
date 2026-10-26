@@ -1,0 +1,28 @@
+# 카테고리 6개의 순서와 색.
+# 메뉴, 홈 카드, 글 목록의 색이 모두 여기서 정해집니다.
+# name 은 글 front matter 의 categories 값과 정확히 같아야 합니다.
+# from → to 는 카드의 대각선 그라데이션 색입니다.
+
+- name: 개발
+  from: "#1e6fd9"
+  to: "#0a2a5c"
+
+- name: CTF/Wargame
+  from: "#d9531e"
+  to: "#4d1a0a"
+
+- name: Bug Bounty
+  from: "#7a2fd0"
+  to: "#2a1060"
+
+- name: 블로그/기술문서
+  from: "#d99a1e"
+  to: "#4d3408"
+
+- name: 논문/컨퍼런스
+  from: "#1ea5d9"
+  to: "#0a3a52"
+
+- name: 공모전/자격증
+  from: "#a02fd0"
+  to: "#3a1050"

@@ -1,32 +1,51 @@
 ---
 layout: default
 ---
-<section class="ow-home" aria-labelledby="home-title">
-  <div class="ow-home-atmosphere" aria-hidden="true">
-    <span class="ow-orbit ow-orbit-one"></span>
-    <span class="ow-orbit ow-orbit-two"></span>
-    <span class="ow-formula ow-formula-one">c ≡ m<sup>e</sup> (mod n)</span>
-    <span class="ow-formula ow-formula-two">φ(n) = (p − 1)(q − 1)</span>
-    <span class="ow-formula ow-formula-three">gcd(a, n) = 1</span>
-    <span class="ow-formula ow-formula-four">∑ xᵢ · 2ⁱ</span>
-  </div>
-  <div class="ow-home-copy">
-    <p class="ow-eyebrow"><span></span> PERSONAL RESEARCH LOG</p>
-    <h1 id="home-title">모르는게 많은 뉴비<br><em>Study, Research and Play!</em></h1>
-    <p class="ow-home-description">웹/시스템 취약점및 암호학 등 공부하고 기록하는 저장소</p>
-    <blockquote class="ow-sigma-quote">
-      “Het universum zingt voor mij!”
-      <cite>SIGMA&nbsp;</cite>
-    </blockquote>
-    <a class="ow-play-button" href="{{ '/blog/' | relative_url }}">
-      <span class="ow-play-glyph" aria-hidden="true">▶</span>
-      <span>전체 글<small>최신순으로 기록 둘러보기</small></span>
-      <span class="ow-button-arrow" aria-hidden="true">›</span>
-    </a>
-  </div>
-  <div class="ow-home-bottom">
-    <span>SECURE THE KNOWLEDGE</span>
-    <span>CRYPTOGRAPHY&nbsp; · &nbsp;CTF&nbsp; · &nbsp;SECURITY</span>
-    <span class="ow-version">SEOUL&nbsp; / &nbsp;{{ 'now' | date: '%Y' }}</span>
-  </div>
-</section>
+{%- assign latest = site.posts | first -%}
+<div class="ow-stage">
+  {%- if latest -%}
+  <section class="ow-hero" aria-labelledby="ow-hero-title">
+    <div class="ow-hero-copy">
+      <span class="ow-tag">최신 글</span>
+      <h1 class="ow-hero-title" id="ow-hero-title">{{ latest.title | escape }}</h1>
+      {%- if latest.description -%}
+      <p class="ow-hero-desc">{{ latest.description | escape }}</p>
+      {%- endif -%}
+      <a class="ow-cta" href="{{ latest.url | relative_url }}">글 읽기</a>
+    </div>
+    <div class="ow-hero-art">
+      {%- if latest.image.path -%}
+      <img src="{{ latest.image.path | relative_url }}" alt="{{ latest.title | escape }} 썸네일" decoding="async">
+      {%- endif -%}
+    </div>
+  </section>
+  {%- endif -%}
+
+  <nav class="ow-cards" aria-label="카테고리별 최신 글">
+    {%- assign sel_done = false -%}
+    {%- for c in site.data.categories -%}
+      {%- assign c_posts = site.categories[c.name] -%}
+      {%- assign c_n = c_posts | size -%}
+      {%- assign c_post = c_posts | first -%}
+      {%- if c_n > 0 -%}
+      <a class="ow-card{% unless sel_done %} is-sel{% endunless %}" href="{{ c_post.url | relative_url }}" style="--c1:{{ c.from }};--c2:{{ c.to }}">
+        <span class="ow-card-face">
+          {%- if c_post.image.path -%}
+          <img class="ow-card-img" src="{{ c_post.image.path | relative_url }}" alt="{{ c_post.title | escape }} 썸네일" loading="lazy" decoding="async">
+          {%- endif -%}
+          <span class="ow-card-cat">{{ c.name }}</span>
+          <span class="ow-card-title">{{ c_post.title | escape }}</span>
+        </span>
+      </a>
+      {%- assign sel_done = true -%}
+      {%- else -%}
+      <div class="ow-card is-empty" style="--c1:{{ c.from }};--c2:{{ c.to }}">
+        <span class="ow-card-face">
+          <span class="ow-card-cat">{{ c.name }}</span>
+          <span class="ow-card-title">준비 중</span>
+        </span>
+      </div>
+      {%- endif -%}
+    {%- endfor -%}
+  </nav>
+</div>

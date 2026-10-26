@@ -1,15 +1,14 @@
 ---
 layout: default
 ---
-<article class="ow-page-panel">
-  {% if page.title %}
-    <header class="ow-page-heading">
-      <p class="ow-eyebrow"><span></span>{{ page.eyebrow | default: 'OPERATION FILE' }}</p>
-      <h1>{{ page.title }}</h1>
-      {% if page.description %}<p>{{ page.description }}</p>{% endif %}
-    </header>
-  {% endif %}
-  <div class="ow-prose">
+<div class="ow-wrap">
+  <header class="ow-pagehead">
+    <h1 class="ow-pagetitle">{{ page.title | escape }}</h1>
+    {%- if page.subtitle -%}
+    <p class="ow-pagesub">{{ page.subtitle }}</p>
+    {%- endif -%}
+  </header>
+  <div class="ow-panel ow-article ow-prose ow-typo">
     {{ content }}
   </div>
-</article>
+</div>

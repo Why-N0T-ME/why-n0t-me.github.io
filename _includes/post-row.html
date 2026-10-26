@@ -1,0 +1,26 @@
+{%- comment -%}
+  글 목록의 한 줄. include 할 때 post 라는 이름으로 글을 넘깁니다.
+  제목 링크가 카드 전체를 덮는 방식이라 링크는 제목에만 있습니다.
+{%- endcomment -%}
+{%- assign p = include.post -%}
+{%- assign p_cat = p.categories | first -%}
+{%- assign p_meta = site.data.categories | where: 'name', p_cat | first -%}
+{%- assign p_from = p_meta.from | default: '#1e6fd9' -%}
+{%- assign p_to = p_meta.to | default: '#0a2a5c' -%}
+<article class="ow-row" style="--c1:{{ p_from }};--c2:{{ p_to }}">
+  <div class="ow-row-thumb">
+    {%- if p.image.path -%}
+    <img src="{{ p.image.path | relative_url }}" alt="{{ p.title | escape }} 썸네일" loading="lazy" decoding="async">
+    {%- endif -%}
+  </div>
+  <div class="ow-row-body">
+    <div class="ow-row-meta">
+      <span class="ow-chip-cat">{{ p_cat }}</span>
+      <time datetime="{{ p.date | date_to_xmlschema }}">{{ p.date | date: '%Y.%m.%d' }}</time>
+    </div>
+    <h2 class="ow-row-title"><a href="{{ p.url | relative_url }}">{{ p.title | escape }}</a></h2>
+    {%- if p.description -%}
+    <p class="ow-row-desc">{{ p.description | escape }}</p>
+    {%- endif -%}
+  </div>
+</article>

@@ -1,0 +1,23 @@
+---
+layout: default
+---
+{%- assign tag_names = '' | split: '' -%}
+{%- for t in site.tags -%}
+  {%- assign tag_names = tag_names | push: t[0] -%}
+{%- endfor -%}
+{%- assign tag_names = tag_names | sort_natural -%}
+<div class="ow-wrap">
+  <header class="ow-pagehead">
+    <span class="ow-tag">태그 {{ tag_names | size }}개</span>
+    <h1 class="ow-pagetitle">Tags</h1>
+    <p class="ow-pagesub">태그를 누르면 해당 글만 모아 봅니다</p>
+  </header>
+
+  <div class="ow-panel ow-tagcloud">
+    {%- for tag in tag_names -%}
+      {%- assign t_slug = tag | slugify | url_encode -%}
+      {%- assign t_n = site.tags[tag] | size -%}
+      <a class="ow-chip ow-chip-lg" href="{{ '/tags/' | append: t_slug | append: '/' | relative_url }}">#{{ tag }}<b>{{ t_n }}</b></a>
+    {%- endfor -%}
+  </div>
+</div>

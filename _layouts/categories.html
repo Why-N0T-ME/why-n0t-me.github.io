@@ -1,23 +1,36 @@
 ---
 layout: default
 ---
-<section class="ow-page-panel ow-category-page" aria-labelledby="categories-title">
-  <header class="ow-page-heading">
-    <p class="ow-eyebrow"><span></span>HERO GALLERY&nbsp; / &nbsp;CLASSIFIED TOPICS</p>
-    <h1 id="categories-title">카테고리</h1>
-    <p>관심 분야를 선택해 관련 기록을 모아볼 수 있습니다.</p>
+<div class="ow-wrap">
+  <header class="ow-pagehead">
+    <span class="ow-tag">카테고리 {{ site.data.categories | size }}개</span>
+    <h1 class="ow-pagetitle">Categories</h1>
+    <p class="ow-pagesub">글 {{ site.posts | size }}개</p>
   </header>
-  {% assign category_names = '개발||CTF/Wargame||Bug Bounty||블로그/기술문서||논문/컨퍼런스||공모전/자격증' | split: '||' %}
-  <div class="ow-category-grid">
-    {% for category in category_names %}
-      {% assign category_posts = site.categories[category] %}
-      {% capture category_query %}{{ category | uri_escape }}{% endcapture %}
-      <a class="ow-category-card" href="{{ '/blog/?category=' | append: category_query | relative_url }}">
-        <span class="ow-category-code">0{{ forloop.index }}</span>
-        <span class="ow-category-count">{{ category_posts.size | default: 0 }} FILES</span>
-        <strong>{{ category }}</strong>
-        <span class="ow-category-action">기록 열기&nbsp; →</span>
+
+  <div class="ow-catgrid">
+    {%- for c in site.data.categories -%}
+      {%- assign c_posts = site.categories[c.name] -%}
+      {%- assign c_n = c_posts | size -%}
+      {%- assign c_post = c_posts | first -%}
+      {%- assign c_slug = c.name | slugify | url_encode -%}
+      {%- if c_n > 0 -%}
+      <a class="ow-catcard" href="{{ '/categories/' | append: c_slug | append: '/' | relative_url }}" style="--c1:{{ c.from }};--c2:{{ c.to }}">
+        <span class="ow-catface">
+          <b class="ow-catcount">{{ c_n }}</b>
+          <span class="ow-catname">{{ c.name }}</span>
+          <span class="ow-catlatest">최근 글 · {{ c_post.title | escape }}</span>
+        </span>
       </a>
-    {% endfor %}
+      {%- else -%}
+      <div class="ow-catcard is-empty" style="--c1:{{ c.from }};--c2:{{ c.to }}">
+        <span class="ow-catface">
+          <b class="ow-catcount">0</b>
+          <span class="ow-catname">{{ c.name }}</span>
+          <span class="ow-catlatest">준비 중</span>
+        </span>
+      </div>
+      {%- endif -%}
+    {%- endfor -%}
   </div>
-</section>
+</div>

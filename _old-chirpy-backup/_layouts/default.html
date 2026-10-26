@@ -1,0 +1,87 @@
+---
+layout: compress
+---
+<!doctype html>
+{% include origin-type.html %}
+{% include lang.html %}
+{% if site.theme_mode %}
+  {% capture prefer_mode %}data-mode="{{ site.theme_mode }}"{% endcapture %}
+{% endif %}
+<html lang="{{ page.lang | default: site.alt_lang | default: site.lang }}" {{ prefer_mode }}>
+  {% include head.html lang=lang %}
+  <body class="ow-app{% if page.layout == 'home' %} ow-app-home{% endif %}">
+    <a class="ow-logo" href="{{ '/' | relative_url }}" aria-label="Choi's Blog home">
+      <span class="ow-logo-mark">C</span>
+      <span>CHOI'S BLOG<small>SECURITY OPERATIONS</small></span>
+    </a>
+
+    <nav class="ow-main-nav" aria-label="Main menu">
+      <a class="ow-nav-link{% if page.layout == 'home' %} is-active{% endif %}" href="{{ '/' | relative_url }}">
+        <i class="fas fa-home" aria-hidden="true"></i><span>HOME</span><small>홈</small>
+      </a>
+      <a class="ow-nav-link{% if page.url contains '/blog' or page.layout == 'post' %} is-active{% endif %}" href="{{ '/blog/' | relative_url }}">
+        <i class="fas fa-play" aria-hidden="true"></i><span>MISSIONS</span><small>전체 글</small>
+      </a>
+      <a class="ow-nav-link{% if page.url == '/categories/' or page.url contains '/categories/' %} is-active{% endif %}" href="{{ '/categories/' | relative_url }}">
+        <i class="fas fa-users" aria-hidden="true"></i><span>HEROES</span><small>카테고리</small>
+      </a>
+      <a class="ow-nav-link{% if page.url == '/archives/' %} is-active{% endif %}" href="{{ '/archives/' | relative_url }}">
+        <i class="fas fa-calendar-alt" aria-hidden="true"></i><span>EVENTS</span><small>아카이브</small>
+      </a>
+      <a class="ow-nav-link{% if page.url == '/tags/' %} is-active{% endif %}" href="{{ '/tags/' | relative_url }}">
+        <i class="fas fa-tags" aria-hidden="true"></i><span>TAG INDEX</span><small>태그</small>
+      </a>
+    </nav>
+
+    <div class="ow-account-bar">
+      <a class="ow-resource" href="{{ '/categories/' | relative_url }}" aria-label="6개 카테고리">
+        <i class="fas fa-gem" aria-hidden="true"></i><span>06</span>
+      </a>
+      <a class="ow-resource" href="{{ '/blog/' | relative_url }}" aria-label="전체 게시물 {{ site.posts.size }}개">
+        <i class="fas fa-coins" aria-hidden="true"></i><span>{{ site.posts.size | prepend: '000' | slice: -3, 3 }}</span>
+      </a>
+      <a class="ow-resource ow-lootbox" href="{{ site.posts.first.url | relative_url }}" data-random-post data-post-urls="{{ site.posts | map: 'url' | jsonify | escape }}" aria-label="랜덤 글 열기">
+        <i class="fas fa-box-open" aria-hidden="true"></i>
+      </a>
+      <a class="ow-resource" href="{{ '/archives/' | relative_url }}" aria-label="학습 기록과 도전과제">
+        <i class="fas fa-medal" aria-hidden="true"></i>
+      </a>
+      <a class="ow-profile" href="{{ '/about/' | relative_url }}">
+        <img src="{{ site.avatar | relative_url }}" alt="프로필 소개로 이동">
+        <span>PROFILE</span>
+      </a>
+    </div>
+
+    <div id="main-wrapper" class="ow-main-wrapper">
+      <main aria-label="Main Content" class="ow-content{% if page.layout == 'home' %} ow-content-home{% endif %}">
+        {{ content }}
+      </main>
+      {% if layout.panel_includes %}
+        <aside id="panel-wrapper" aria-label="Article navigation">
+          {% for _include in layout.panel_includes %}
+            {% assign _include_path = _include | append: '.html' %}
+            {% include {{ _include_path }} lang=lang %}
+          {% endfor %}
+        </aside>
+      {% endif %}
+      {% for _include in layout.tail_includes %}
+        {% assign _include_path = _include | append: '.html' %}
+        {% include {{ _include_path }} lang=lang %}
+      {% endfor %}
+      <footer class="ow-footer">
+        <span>© {{ 'now' | date: '%Y' }} {{ site.social.name }}</span>
+        <span>LEARN&nbsp; · &nbsp;ANALYZE&nbsp; · &nbsp;RECORD</span>
+      </footer>
+    </div>
+
+    <div id="mask" class="d-none position-fixed w-100 h-100 z-1"></div>
+    {% if site.pwa.enabled %}
+      {% include_cached notification.html lang=lang %}
+    {% endif %}
+    <script src="{{ '/assets/js/ow-menu.js' | relative_url }}" defer></script>
+    {% for _include in layout.script_includes %}
+      {% assign _include_path = _include | append: '.html' %}
+      {% include {{ _include_path }} %}
+    {% endfor %}
+  </body>
+</html>

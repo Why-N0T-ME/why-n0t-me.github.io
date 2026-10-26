@@ -1,0 +1,18 @@
+---
+layout: default
+---
+{%- assign c_name = page.title -%}
+{%- assign c_meta = site.data.categories | where: 'name', c_name | first -%}
+<div class="ow-wrap">
+  <header class="ow-pagehead" style="--c1:{{ c_meta.from | default: '#1e6fd9' }};--c2:{{ c_meta.to | default: '#0a2a5c' }}">
+    <a class="ow-tag" href="{{ '/categories/' | relative_url }}">Categories</a>
+    <h1 class="ow-pagetitle">{{ c_name | escape }}</h1>
+    <p class="ow-pagesub">글 {{ page.posts | size }}개</p>
+  </header>
+
+  <div class="ow-rows">
+    {%- for post in page.posts -%}
+      {%- include post-row.html post=post -%}
+    {%- endfor -%}
+  </div>
+</div>
