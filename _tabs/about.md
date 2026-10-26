@@ -17,7 +17,7 @@ I am a passionate cybersecurity enthusiast focused on exploring the depths of te
 * **Network Security:** Inspecting traffic, understanding protocols, and identifying infrastructure flaws.
 * **Red Teaming:** Simulating real-world cyberattacks to help organisations improve their security posture.
 * **Other Elements:** Continuously exploring binary exploitation, cryptography, and reverse engineering.
-
+* **Latest Interest: Cryptography, so i'm learning abstract/linear algebra, Number Theory and etc**
 ---
 
 ### Why I Blog
