@@ -1,0 +1,33 @@
+---
+layout: default
+panel_includes:
+  - toc
+tail_includes:
+  - related-posts
+  - post-nav
+script_includes:
+  - comment
+---
+{% include lang.html %}
+<article class="ow-page-panel ow-report">
+  <header class="ow-page-heading">
+    <p class="ow-eyebrow"><span></span>FIELD REPORT&nbsp; / &nbsp;{{ page.categories | join: ' · ' }}</p>
+    <h1>{{ page.title }}</h1>
+    {% if page.description %}<p>{{ page.description }}</p>{% endif %}
+    <div class="ow-report-meta">
+      <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y.%m.%d' }}</time>
+      {% for tag in page.tags %}<a href="{{ '/tags/' | append: tag | slugify | append: '/' | relative_url }}">#{{ tag }}</a>{% endfor %}
+    </div>
+  </header>
+  {% if page.image %}
+    {% assign post_image = page.image.path | default: page.image %}
+    <figure class="ow-report-cover"><img src="{{ post_image | relative_url }}" alt="{{ page.image.alt | default: page.title | escape }}"></figure>
+  {% endif %}
+  <div class="ow-prose">
+    {{ content }}
+  </div>
+  <footer class="ow-report-footer">
+    <span>END OF FIELD REPORT</span>
+    <a href="{{ '/blog/' | relative_url }}">전체 글로 돌아가기&nbsp; →</a>
+  </footer>
+</article>

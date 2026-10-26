@@ -1,35 +1,26 @@
 ---
 # the default layout is 'page'
+title: 자기소개
+description: 보안과 암호학을 배우며 기록하는 사람, Choi입니다.
+permalink: /about/
 icon: fas fa-info-circle
 order: 4
 ---
 
-Hello and welcome to my blog! Cheers for stopping by. 
+보안 기술을 배우며 시스템이 동작하는 원리를 살펴보고, 취약점이 생기는 이유와 대응 방법을 공부하고 있습니다.
 
-### Just a normal guy who loves hacking.
+## 관심 분야
 
-I am a passionate cybersecurity enthusiast focused on exploring the depths of technology, understanding how systems work, and uncovering security vulnerabilities.
+- **웹 보안**: 웹 애플리케이션 취약점과 방어 기법
+- **네트워크 보안**: 프로토콜, 트래픽, 인프라 구조
+- **시스템 보안**: 바이너리 익스플로잇과 리버스 엔지니어링
+- **암호학**: 고전·현대 암호와 정수론, 선형대수 기초
 
----
+## 이 블로그에 기록하는 것
 
-### Areas of Interest
-* **Web Security:** Analysing and securing modern web applications.
-* **Network Security:** Inspecting traffic, understanding protocols, and identifying infrastructure flaws.
-* **Red Teaming:** Simulating real-world cyberattacks to help organisations improve their security posture.
-* **Other Elements:** Continuously exploring binary exploitation, cryptography, and reverse engineering.
-* **Latest Interest: Cryptography, so i'm learning abstract/linear algebra, Number Theory and etc**
----
+CTF와 워게임 풀이, 보안 개념 정리, 실습 과정과 학습 기록을 남깁니다. 내용을 다시 찾아보고 이어서 공부할 수 있도록 직접 확인한 과정과 결과를 정리하는 공간입니다.
 
-### Why I Blog
-This space serves as my digital notebook and learning journal. Here, you will find:
-* **Write-ups:** Detailed walkthroughs and solutions for CTFs and wargames.
-* **Technical Notes:** Summaries and documentation of my daily security research.
-* **Open-Source Projects:** Insights into tools and scripts I develop to automate tasks.
+## 연락처
 
----
-
-### 📫 Let's Connect
-If you fancy a chat about cybersecurity, open-source projects, or anything tech-related, feel free to reach out!
-
-* **GitHub:** github/why-n0t/me
-* **Email:** wjofficialcs@gmail.com
+- [GitHub](https://github.com/why-n0t-me)
+- [Email](mailto:wjofficialcs@gmail.com)
