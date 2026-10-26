@@ -1,5 +1,5 @@
 /* Overwatch UI blog — 동작 스크립트 (의존성 없음)
-   0 예전 PWA 정리  1 설정(테마·전체화면)  2 Categories 메뉴  3 랜덤 글  4 글 상세(목차·진행률·키보드)
+   0 예전 PWA 정리  1 설정(테마·전체화면)  2 Categories 메뉴  3 랜덤 글 · 전리품 상자  4 글 상세(목차·진행률·키보드)
    5 본문 다듬기(코드 헤더·표) */
 (function () {
   'use strict';
@@ -116,6 +116,183 @@
     });
   }
 
+  /* 3-1. 전리품 상자 — 오늘 공부할 분야 뽑기 -------------------------------- */
+  var loot = $('#ow-loot');
+  var lootStage = loot ? $('.ow-loot-stage', loot) : null;
+  var RARITIES = [
+    { key: 'common', name: '일반', weight: 55 },
+    { key: 'rare', name: '희귀', weight: 30 },
+    { key: 'epic', name: '영웅', weight: 12 },
+    { key: 'legendary', name: '전설', weight: 3 },
+    { key: 'transcendent', name: '초월', weight: 0 } // 확률로는 나오지 않고, 분야에 rarity 를 적었을 때만 나온다
+  ];
+  var SPARKS = { common: 0, rare: 6, epic: 10, legendary: 18, transcendent: 30 };
+  var lootTimers = [];
+  var lootOpener = null;
+
+  function lootIsOpen() { return !!(loot && !loot.hidden); }
+  function lootClear() { lootTimers.forEach(function (t) { window.clearTimeout(t); }); lootTimers = []; }
+  function lootLater(fn, ms) { lootTimers.push(window.setTimeout(fn, ms)); }
+  function lootState(st) { if (lootStage) lootStage.setAttribute('data-state', st); }
+  function calm() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+
+  function rarityByKey(key) {
+    return RARITIES.filter(function (r) { return r.key === key; })[0] || null;
+  }
+
+  function pickRarity() {
+    var total = RARITIES.reduce(function (n, r) { return n + r.weight; }, 0);
+    var x = Math.random() * total;
+    for (var i = 0; i < RARITIES.length; i++) {
+      x -= RARITIES[i].weight;
+      if (x < 0) return RARITIES[i];
+    }
+    return RARITIES[0];
+  }
+
+  // 분야를 비중(weight)대로 뽑고, 방금 나온 분야는 잠시 제외한다
+  function pickField() {
+    var fields = (window.OW && window.OW.fields) || [];
+    if (!fields.length) return null;
+    var recent = [];
+    try { recent = JSON.parse(store('ow-loot-recent') || '[]'); } catch (e) { recent = []; }
+    var pool = fields.filter(function (f) { return recent.indexOf(f.name) < 0; });
+    if (!pool.length) pool = fields;
+    var w = function (f) { return typeof f.weight === 'number' && f.weight >= 0 ? f.weight : 1; };
+    var total = pool.reduce(function (n, f) { return n + w(f); }, 0);
+    var x = Math.random() * total;
+    var f = pool[pool.length - 1];
+    for (var i = 0; i < pool.length; i++) {
+      x -= w(pool[i]);
+      if (x < 0) { f = pool[i]; break; }
+    }
+    recent.push(f.name);
+    store('ow-loot-recent', JSON.stringify(recent.slice(-Math.min(3, fields.length - 1 || 1))));
+    return f;
+  }
+
+  // 한 번 뽑기: 분야 + 등급 (분야에 rarity 가 적혀 있으면 그 등급으로 고정)
+  function drawLoot() {
+    var field = pickField();
+    if (!field) return null;
+    return { field: field, rarity: rarityByKey(field.rarity) || pickRarity() };
+  }
+
+  function lootFill(rarity, field) {
+    loot.setAttribute('data-rarity', rarity.key);
+    var idx = RARITIES.indexOf(rarity);
+    $$('#ow-loot-pips i').forEach(function (p, i) { p.classList.toggle('on', i <= idx); });
+    $('#ow-loot-rarity').textContent = rarity.name;
+    $('#ow-loot-field').textContent = field.name;
+    var face = $('.ow-loot-face', loot);
+    face.style.setProperty('--c1', field.from || '#1e6fd9');
+    face.style.setProperty('--c2', field.to || '#0a2a5c');
+    var sub = $('#ow-loot-sub');
+    if (sub) { sub.textContent = field.sub || ''; sub.hidden = !field.sub; }
+    var live = $('#ow-loot-live');
+    if (live) live.textContent = '';
+    lootLater(function () { if (live) live.textContent = rarity.name + ' 등급, 오늘의 공부 분야: ' + field.name; }, 900);
+  }
+
+  function lootSparks(rarity) {
+    var box = $('.ow-loot-sparks', loot);
+    box.textContent = '';
+    var n = SPARKS[rarity.key] || 0;
+    for (var i = 0; i < n; i++) {
+      var a = (Math.PI * 2 * i) / n + Math.random() * 0.5;
+      var r = 110 + Math.random() * 90;
+      var el = doc.createElement('i');
+      el.style.setProperty('--dx', Math.round(Math.cos(a) * r) + 'px');
+      el.style.setProperty('--dy', Math.round(Math.sin(a) * r * 0.9 - 30) + 'px');
+      el.style.setProperty('--d', (Math.random() * 0.12).toFixed(2) + 's');
+      el.style.setProperty('--hue', String(Math.floor(Math.random() * 360)));
+      box.appendChild(el);
+    }
+  }
+
+  // opts: { rarity: 'rare', field: '암호학', hold: 'shake' | 'open' | 'reveal' }  (시안 확인용)
+  function lootPlay(opts) {
+    if (!loot) return;
+    opts = opts || {};
+    lootClear();
+    var fields = (window.OW && window.OW.fields) || [];
+    var field = fields.filter(function (f) { return f.name === opts.field; })[0];
+    var rarity = rarityByKey(opts.rarity);
+    if (field) {
+      rarity = rarity || rarityByKey(field.rarity) || pickRarity();
+    } else {
+      var d = drawLoot();
+      if (!d) return;
+      field = d.field;
+      rarity = rarity || d.rarity;
+    }
+    lootFill(rarity, field);
+    lootSparks(rarity);
+
+    if (calm() || opts.hold === 'reveal') { lootState('reveal'); focusAgain(); return; }
+    var shakeMs = rarity.key === 'transcendent' ? 950 : 560; // 초월은 뜸을 조금 더 들인다
+    lootState('idle');
+    lootLater(function () {
+      lootState('shake');
+      if (opts.hold === 'shake') return;
+      lootLater(function () {
+        lootState('open');
+        if (opts.hold === 'open') return;
+        lootLater(function () { lootState('reveal'); focusAgain(); }, 260);
+      }, shakeMs);
+    }, 340);
+  }
+
+  function focusAgain() {
+    var b = $('[data-loot-again]', loot);
+    if (b && loot.contains(doc.activeElement) && doc.activeElement !== b) {
+      lootLater(function () { b.focus(); }, 380);
+    }
+  }
+
+  function openLoot(opts, opener) {
+    if (!loot) return;
+    lootOpener = opener || doc.activeElement;
+    setSettings(false);
+    loot.hidden = false;
+    root.classList.add('ow-loot-lock');
+    void loot.offsetWidth; // 페이드 인을 위해 레이아웃 확정
+    loot.classList.add('is-open');
+    var c = $('.ow-loot-close', loot);
+    if (c) c.focus();
+    lootPlay(opts);
+  }
+
+  function closeLoot() {
+    if (!lootIsOpen()) return;
+    lootClear();
+    loot.classList.remove('is-open');
+    root.classList.remove('ow-loot-lock');
+    window.setTimeout(function () { if (!loot.classList.contains('is-open')) loot.hidden = true; }, 230);
+    if (lootOpener && lootOpener.focus) { try { lootOpener.focus(); } catch (e) { /* 무시 */ } }
+  }
+
+  if (loot) {
+    $$('[data-loot-open]').forEach(function (a) {
+      a.addEventListener('click', function (e) { e.preventDefault(); openLoot(null, a); });
+    });
+    $$('[data-loot-close]', loot).forEach(function (el) { el.addEventListener('click', closeLoot); });
+    var again = $('[data-loot-again]', loot);
+    if (again) again.addEventListener('click', function () { lootPlay(); });
+    // 포커스가 상자 밖으로 나가지 않게 가둔다
+    loot.addEventListener('keydown', function (e) {
+      if (e.key !== 'Tab') return;
+      var items = $$('button, a[href]', loot).filter(function (el) {
+        return !el.hidden && window.getComputedStyle(el).visibility !== 'hidden';
+      });
+      if (!items.length) return;
+      var first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+    window.OWLoot = { open: openLoot, close: closeLoot, draw: drawLoot };
+  }
+
   /* 3. 랜덤 글 -------------------------------------------------------------- */
   var ow = window.OW || { base: '', posts: [] };
   function norm(path) {
@@ -139,6 +316,7 @@
     var t = e.target;
     var typing = t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable);
     if (e.key === 'Escape') {
+      if (lootIsOpen()) { closeLoot(); return; }
       if (dd && dd.classList.contains('is-open')) { setDd(false); return; }
       if (panel) {
         var willOpen = panel.hidden;

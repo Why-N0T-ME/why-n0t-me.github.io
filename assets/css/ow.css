@@ -1,7 +1,7 @@
 /* ==========================================================================
    Overwatch UI blog theme
    구성: 1 토큰 · 2 기본 · 3 상단 바 · 4 공통 부품 · 5 홈 · 6 글 상세 · 7 본문 타이포
-         8 코드 · 9 목록 · 10 자기소개 · 11 반응형
+         8 코드 · 9 목록 · 10 자기소개 · 11 반응형 · 12 전리품 상자
    ========================================================================== */
 
 /* 1. 디자인 토큰 ---------------------------------------------------------- */
@@ -786,6 +786,231 @@ a.ow-stat-card:hover, a.ow-stat-card:focus-visible { background: #fff; color: #f
 @media (max-width: 520px) {
   .ow-catgrid { grid-template-columns: 1fr; }
   .ow-settings { right: 12px; left: 12px; width: auto; }
+}
+
+/* 12. 전리품 상자 --------------------------------------------------------- */
+html.ow-loot-lock { overflow: hidden; }
+.ow-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.ow-loot {
+  --rc: #9fb4d6; --rc2: #3b4f73; --rg: rgba(159, 180, 214, .30); --ray: 0;
+  position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 16px;
+  opacity: 0; transition: opacity .22s ease;
+  color: #fff;
+}
+.ow-loot[hidden] { display: none; }
+.ow-loot.is-open { opacity: 1; }
+.ow-loot[data-rarity='common']    { --rc: #a9bddb; --rc2: #3b4f73; --rg: rgba(169, 189, 219, .30); --ray: 0; }
+.ow-loot[data-rarity='rare']      { --rc: #3fa2ff; --rc2: #0b3f86; --rg: rgba(63, 162, 255, .42);  --ray: .22; }
+.ow-loot[data-rarity='epic']      { --rc: #b872ff; --rc2: #4a1a8a; --rg: rgba(184, 114, 255, .48); --ray: .42; }
+.ow-loot[data-rarity='legendary'] { --rc: #ffb02e; --rc2: #8a4a00; --rg: rgba(255, 176, 46, .58);  --ray: .75; }
+.ow-loot[data-rarity='transcendent'] { --rc: #ffeaff; --rc2: #7a4dff; --rg: rgba(206, 170, 255, .66); --ray: .92; }
+
+.ow-loot-backdrop {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 44%, var(--rg) 0%, transparent 48%), rgba(4, 9, 24, .86);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  transition: background .4s ease;
+}
+:root[data-theme='light'] .ow-loot-backdrop {
+  background: radial-gradient(circle at 50% 44%, var(--rg) 0%, transparent 48%), rgba(14, 26, 56, .80);
+}
+
+.ow-loot-close {
+  position: absolute; top: 14px; right: 14px; z-index: 5;
+  display: grid; place-items: center; width: 48px; height: 48px; padding: 0; cursor: pointer;
+  background: rgba(8, 18, 43, .7); border: 1px solid var(--line-hi); color: #fff;
+}
+.ow-loot-close:hover { border-color: var(--orange); color: var(--orange); }
+.ow-loot-close .ow-ic { width: 22px; height: 22px; }
+
+.ow-loot-stage { position: relative; z-index: 1; width: min(440px, 100%); display: flex; flex-direction: column; align-items: center; }
+.ow-loot-kicker { margin: 0; font: 700 13px var(--font-num); letter-spacing: .34em; text-transform: uppercase; color: #9fb6d9; }
+
+.ow-loot-arena { position: relative; width: 100%; height: min(410px, 56vh); display: grid; place-items: center; }
+
+/* 빛줄기 · 섬광 · 입자 */
+.ow-loot-rays {
+  position: absolute; left: 50%; top: 50%; width: 680px; height: 680px; margin: -340px 0 0 -340px; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg, var(--rc) 0 5deg, transparent 5deg 22deg);
+  -webkit-mask: radial-gradient(circle, #000 0, rgba(0, 0, 0, .55) 22%, transparent 62%);
+  mask: radial-gradient(circle, #000 0, rgba(0, 0, 0, .55) 22%, transparent 62%);
+  opacity: 0; transition: opacity .5s ease; animation: ow-spin 24s linear infinite;
+}
+[data-state='reveal'] .ow-loot-rays { opacity: var(--ray); }
+@keyframes ow-spin { to { transform: rotate(360deg); } }
+
+.ow-loot-flash {
+  position: absolute; left: 50%; top: 50%; width: 520px; height: 520px; margin: -260px 0 0 -260px; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, #fff 0, rgba(255, 236, 170, .75) 22%, transparent 62%);
+}
+[data-state='open'] .ow-loot-flash { animation: ow-flash .5s ease-out; }
+@keyframes ow-flash { 0% { opacity: 0; transform: scale(.4); } 25% { opacity: 1; } 100% { opacity: 0; transform: scale(1.15); } }
+
+.ow-loot-sparks { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+.ow-loot-sparks i {
+  position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; background: var(--rc); opacity: 0;
+  box-shadow: 0 0 10px var(--rc);
+}
+[data-state='reveal'] .ow-loot-sparks i { animation: ow-spark .95s cubic-bezier(.1, .7, .3, 1) var(--d, 0s) both; }
+@keyframes ow-spark {
+  0% { opacity: 1; transform: translate(0, 0) rotate(45deg) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(225deg) scale(.2); }
+}
+
+/* 상자 */
+.ow-loot-box { position: absolute; width: 220px; height: 231px; margin-top: 18px; transform-origin: 50% 88%; }
+.ow-loot-box svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 14px 22px rgba(0, 0, 0, .5)); }
+.ow-box-lid { transform-box: fill-box; transform-origin: 50% 100%; transition: transform .26s cubic-bezier(.2, 1.6, .4, 1); }
+.ow-box-glow { opacity: 0; transition: opacity .2s ease; }
+.ow-box-beam { opacity: 0; transform-origin: 100px 90px; }
+
+[data-state='idle'] .ow-loot-box { animation: ow-box-in .34s cubic-bezier(.2, 1.3, .4, 1) both; }
+@keyframes ow-box-in { from { opacity: 0; transform: translateY(46px) scale(.6); } to { opacity: 1; transform: none; } }
+
+[data-state='shake'] .ow-loot-box { animation: ow-shake .56s ease-in-out both; }
+[data-state='shake'] .ow-box-glow { opacity: .55; transition-duration: .5s; }
+@keyframes ow-shake {
+  0%   { transform: rotate(0) translateX(0); }
+  14%  { transform: rotate(-5deg) translateX(-3px); }
+  30%  { transform: rotate(5deg) translateX(3px); }
+  46%  { transform: rotate(-6.5deg) translateX(-4px) scale(1.02); }
+  62%  { transform: rotate(6.5deg) translateX(4px) scale(1.03); }
+  78%  { transform: rotate(-4deg) translateX(-2px) scale(1.04); }
+  100% { transform: rotate(0) translateX(0) scale(1.05); }
+}
+
+[data-state='open'] .ow-loot-box, [data-state='reveal'] .ow-loot-box { transform: scale(1.05); }
+[data-state='open'] .ow-box-lid, [data-state='reveal'] .ow-box-lid { transform: translate(14px, -50px) rotate(10deg); }
+[data-state='open'] .ow-box-glow { opacity: 1; }
+[data-state='open'] .ow-box-beam { animation: ow-beam .3s ease-out both; }
+@keyframes ow-beam { from { opacity: 0; transform: scaleY(.2); } to { opacity: .95; transform: none; } }
+
+[data-state='reveal'] .ow-loot-box { animation: ow-box-away .5s ease-in both; }
+@keyframes ow-box-away { from { opacity: 1; transform: scale(1.05); } to { opacity: 0; transform: translateY(78px) scale(.62); } }
+
+/* 카드 */
+.ow-loot-card {
+  position: absolute; z-index: 3; height: min(360px, 50vh); aspect-ratio: 7 / 9;
+  opacity: 0; transform: translateY(80px) scale(.45); pointer-events: none; visibility: hidden;
+  filter: drop-shadow(0 0 20px var(--rg)) drop-shadow(0 16px 22px rgba(0, 0, 0, .5));
+}
+[data-state='reveal'] .ow-loot-card {
+  opacity: 1; transform: none; pointer-events: auto; visibility: visible;
+  animation: ow-card-pop .55s cubic-bezier(.2, 1.3, .35, 1) both;
+}
+@keyframes ow-card-pop {
+  0%   { opacity: 0; transform: translateY(80px) scale(.45) rotate(-5deg); }
+  55%  { opacity: 1; transform: translateY(-14px) scale(1.05) rotate(1.2deg); }
+  100% { opacity: 1; transform: none; }
+}
+.ow-loot-frame {
+  height: 100%; padding: 3px;
+  background: linear-gradient(160deg, var(--rc), var(--rc2));
+  clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 26px 100%, 0 calc(100% - 26px));
+}
+.ow-loot-face {
+  position: relative; height: 100%; overflow: hidden; display: flex; flex-direction: column; padding: 18px 20px 20px;
+  background: linear-gradient(160deg, var(--c1, #1e6fd9), var(--c2, #0a2a5c));
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+}
+.ow-loot-face::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(transparent 48%, rgba(0, 0, 0, .5)),
+    radial-gradient(120% 70% at 50% 0, rgba(255, 255, 255, .24), transparent 62%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, .06) 0 2px, transparent 2px 16px);
+}
+.ow-loot-face::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%; pointer-events: none; opacity: 0;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, .38), transparent);
+  transform: skewX(-18deg);
+}
+.ow-loot[data-rarity='epic'] [data-state='reveal'] .ow-loot-face::after,
+.ow-loot[data-rarity='legendary'] [data-state='reveal'] .ow-loot-face::after,
+.ow-loot[data-rarity='transcendent'] [data-state='reveal'] .ow-loot-face::after { opacity: 1; animation: ow-sheen 2.8s ease-in-out .7s infinite; }
+@keyframes ow-sheen { 0% { left: -60%; } 55%, 100% { left: 130%; } }
+.ow-loot-face > * { position: relative; z-index: 1; }
+.ow-loot-hex { position: absolute !important; left: 50%; top: 52%; z-index: 0 !important; width: 78%; margin: -39% 0 0 -39%; opacity: .16; fill: none; stroke: #fff; stroke-width: 2; }
+
+.ow-loot-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ow-loot-rarity {
+  padding: 4px 18px 4px 20px; background: var(--rc); color: #0a1226;
+  font: 900 italic 19px/1.25 var(--font); clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%);
+}
+.ow-loot-pips { display: flex; gap: 8px; margin-right: 6px; }
+.ow-loot-pips i { width: 9px; height: 9px; border: 1.5px solid rgba(255, 255, 255, .7); transform: rotate(45deg); }
+.ow-loot-pips i.on { background: var(--rc); border-color: var(--rc); box-shadow: 0 0 8px var(--rc); }
+
+.ow-loot-mid { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; text-align: center; }
+.ow-loot-label { font: 700 12px var(--font); letter-spacing: .3em; color: rgba(255, 255, 255, .82); }
+.ow-loot-field {
+  margin: 0; color: #fff; font: 900 italic clamp(34px, 10vw, 46px)/1.14 var(--font);
+  word-break: keep-all; overflow-wrap: anywhere; text-shadow: 0 3px 18px rgba(0, 0, 0, .5);
+}
+.ow-loot-sub { max-width: 230px; margin-top: -2px; font: 500 13px/1.55 var(--font); color: rgba(255, 255, 255, .84); word-break: keep-all; text-wrap: balance; text-shadow: 0 2px 10px rgba(0, 0, 0, .5); }
+.ow-loot-sub[hidden] { display: none; }
+
+/* 버튼 */
+.ow-loot-actions {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 10px;
+  opacity: 0; transform: translateY(10px); visibility: hidden;
+  transition: opacity .3s ease .12s, transform .3s ease .12s, visibility 0s linear .42s;
+}
+[data-state='reveal'] .ow-loot-actions { opacity: 1; transform: none; visibility: visible; transition-delay: .32s, .32s, .32s; }
+.ow-loot .ow-btn-solid { background: #fff; color: #0a1226; }
+.ow-loot .ow-btn-solid:hover { background: var(--orange); color: #0a1226; }
+.ow-loot .ow-btn { display: inline-flex; align-items: center; min-height: 48px; padding: 0 22px; font-size: 16px; background: rgba(8, 18, 43, .55); }
+.ow-loot .ow-btn:hover { color: var(--orange); }
+
+/* 초월: 전설보다 위. 무지개빛 테두리·빛줄기·별 */
+.ow-loot[data-rarity='transcendent'] .ow-loot-frame {
+  background: linear-gradient(135deg, #ff6fb1, #ffd23f, #5cff9d, #3fd0ff, #b872ff, #ff6fb1);
+  background-size: 200% 200%;
+  animation: ow-prism 4s linear infinite;
+}
+@keyframes ow-prism { to { background-position: 200% 200%; } }
+.ow-loot[data-rarity='transcendent'] .ow-loot-rarity {
+  background: linear-gradient(90deg, #ff7ab8, #ffd23f, #5cff9d, #3fd0ff, #c08cff);
+}
+.ow-loot[data-rarity='transcendent'] .ow-loot-rays {
+  background: repeating-conic-gradient(from 0deg,
+    #ff6fb1 0 4deg, transparent 4deg 12deg, #ffd23f 12deg 16deg, transparent 16deg 24deg,
+    #5cff9d 24deg 28deg, transparent 28deg 36deg, #3fd0ff 36deg 40deg, transparent 40deg 48deg,
+    #b872ff 48deg 52deg, transparent 52deg 60deg);
+  animation: ow-spin 20s linear infinite, ow-hue 7s linear infinite;
+}
+@keyframes ow-hue { to { filter: hue-rotate(360deg); } }
+.ow-loot[data-rarity='transcendent'] .ow-loot-face::before {
+  background:
+    radial-gradient(1.6px 1.6px at 14% 24%, #fff 55%, transparent 60%),
+    radial-gradient(1.2px 1.2px at 78% 12%, #fff 55%, transparent 60%),
+    radial-gradient(1.4px 1.4px at 88% 46%, #fff 55%, transparent 60%),
+    radial-gradient(1px 1px at 9% 58%, #fff 55%, transparent 60%),
+    radial-gradient(1.6px 1.6px at 30% 82%, #fff 55%, transparent 60%),
+    radial-gradient(1.2px 1.2px at 66% 88%, #fff 55%, transparent 60%),
+    radial-gradient(1px 1px at 52% 34%, #fff 55%, transparent 60%),
+    radial-gradient(1.3px 1.3px at 92% 80%, #fff 55%, transparent 60%),
+    linear-gradient(transparent 52%, rgba(0, 0, 0, .5)),
+    radial-gradient(120% 70% at 50% 0, rgba(190, 150, 255, .34), transparent 62%);
+}
+.ow-loot[data-rarity='transcendent'] .ow-loot-sparks i {
+  background: hsl(var(--hue, 45) 100% 70%); box-shadow: 0 0 10px hsl(var(--hue, 45) 100% 70%);
+}
+.ow-loot[data-rarity='transcendent'] [data-state='shake'] .ow-loot-box { animation-duration: .95s; }
+.ow-loot[data-rarity='transcendent'] .ow-loot-pips i.on { background: #fff; border-color: #fff; box-shadow: 0 0 10px #fff; }
+
+
+@media (max-width: 520px) {
+  .ow-loot { padding: 12px; }
+  .ow-loot-box { width: 190px; height: 200px; }
+  .ow-loot-actions { width: 100%; }
+  .ow-loot-actions > * { flex: 1 1 140px; justify-content: center; }
+}
+@media (max-height: 560px) {
+  .ow-loot-kicker { display: none; }
+  .ow-loot-arena { height: 62vh; }
+  .ow-loot-card { height: 56vh; }
 }
 
 @media (prefers-reduced-motion: reduce) {

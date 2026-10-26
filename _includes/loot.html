@@ -1,0 +1,85 @@
+{%- comment -%} 전리품 상자 모달. 헤더의 상자 아이콘(data-loot-open)이 연다. 동작은 assets/js/ow.js 의 6번 구역. {%- endcomment -%}
+<div class="ow-loot" id="ow-loot" role="dialog" aria-modal="true" aria-label="전리품 상자" data-rarity="common" hidden>
+  <div class="ow-loot-backdrop" data-loot-close></div>
+
+  <button type="button" class="ow-loot-close" data-loot-close aria-label="닫기">
+    <svg class="ow-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>
+  </button>
+
+  <div class="ow-loot-stage" data-state="idle">
+    <p class="ow-loot-kicker">Loot Box</p>
+
+    <div class="ow-loot-arena">
+      <div class="ow-loot-rays" aria-hidden="true"></div>
+      <div class="ow-loot-flash" aria-hidden="true"></div>
+
+      <div class="ow-loot-box" aria-hidden="true">
+        <svg viewBox="0 0 200 210" focusable="false">
+          <defs>
+            <linearGradient id="owb-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2358b4"/><stop offset="1" stop-color="#0b1f52"/></linearGradient>
+            <linearGradient id="owb-r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b86e6"/><stop offset="1" stop-color="#143f8c"/></linearGradient>
+            <linearGradient id="owb-t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cb8ff"/><stop offset="1" stop-color="#2a6ad0"/></linearGradient>
+            <radialGradient id="owb-in" cx=".5" cy=".5" r=".62"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="#ffe27a"/><stop offset="1" stop-color="#ff9a1a"/></radialGradient>
+            <linearGradient id="owb-beam" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff3b8" stop-opacity=".95"/><stop offset="1" stop-color="#fff3b8" stop-opacity="0"/></linearGradient>
+            <filter id="owb-blur" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="3.2"/></filter>
+          </defs>
+
+          <ellipse cx="100" cy="186" rx="74" ry="14" fill="#000" opacity=".35"/>
+
+          <g class="ow-box-body">
+            <polygon points="30,85 100,120 100,180 30,145" fill="url(#owb-l)"/>
+            <polygon points="170,85 100,120 100,180 170,145" fill="url(#owb-r)"/>
+            <polygon points="100,50 170,85 100,120 30,85" fill="url(#owb-in)"/>
+            <path d="M100 120v60" stroke="#9fd0ff" stroke-width="1.2" opacity=".5"/>
+            <path d="M30 145l70 35 70-35" fill="none" stroke="#ffd23f" stroke-width="2.4" stroke-linejoin="round"/>
+            <path d="M30 85v60M170 85v60" stroke="#ffd23f" stroke-width="2.4" stroke-linecap="round"/>
+            <rect x="90" y="126" width="20" height="26" rx="2" fill="#ffd23f"/>
+            <circle cx="100" cy="136" r="3.6" fill="#7a4a00"/><rect x="98.6" y="138" width="2.8" height="8" fill="#7a4a00"/>
+          </g>
+
+          <polygon class="ow-box-beam" points="58,86 142,86 178,-70 22,-70" fill="url(#owb-beam)"/>
+
+          <g class="ow-box-lid">
+            <polygon points="30,65 100,100 100,120 30,85" fill="url(#owb-l)"/>
+            <polygon points="170,65 100,100 100,120 170,85" fill="url(#owb-r)"/>
+            <polygon points="100,30 170,65 100,100 30,65" fill="url(#owb-t)"/>
+            <path d="M30 85l70 35 70-35" fill="none" stroke="#ffd23f" stroke-width="2.4" stroke-linejoin="round"/>
+            <path d="M30 65l70 35 70-35M30 65v20M170 65v20" fill="none" stroke="#ffd23f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+            <path d="M100 30l70 35-70 35-70-35z" fill="none" stroke="#cfe6ff" stroke-width="1" opacity=".55"/>
+            <path d="M100 52l30 15-30 15-30-15z" fill="#ffd23f" opacity=".9"/>
+          </g>
+
+          <path class="ow-box-glow" d="M30 85l70 35 70-35" fill="none" stroke="#ffe27a" stroke-width="6" stroke-linejoin="round" filter="url(#owb-blur)"/>
+        </svg>
+      </div>
+
+      <div class="ow-loot-sparks" aria-hidden="true"></div>
+
+      <div class="ow-loot-card" id="ow-loot-card">
+        <div class="ow-loot-frame">
+          <div class="ow-loot-face">
+            <svg class="ow-loot-hex" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path d="M50 4l40 23v46L50 96 10 73V27z"/><path d="M50 22l25 14v28L50 78 25 64V36z"/></svg>
+            <div class="ow-loot-top">
+              <span class="ow-loot-rarity" id="ow-loot-rarity">일반</span>
+              <span class="ow-loot-pips" id="ow-loot-pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            </div>
+            <div class="ow-loot-mid">
+              <span class="ow-loot-label">오늘의 공부 분야</span>
+              <h2 class="ow-loot-field" id="ow-loot-field">웹 해킹</h2>
+              <span class="ow-loot-sub" id="ow-loot-sub" hidden></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ow-loot-actions">
+      <button type="button" class="ow-btn-solid" data-loot-again>
+        <svg class="ow-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v5h-5"/></svg>다시 뽑기
+      </button>
+      <a class="ow-btn" href="{{ '/blog/' | relative_url }}" data-random>랜덤 글 읽기</a>
+    </div>
+
+    <p class="ow-sr" id="ow-loot-live" aria-live="polite"></p>
+  </div>
+</div>

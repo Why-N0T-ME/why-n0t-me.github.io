@@ -13,11 +13,13 @@
   </main>
 
   {% include footer.html %}
+  {% include loot.html %}
 
   <script>
     window.OW = {
       base: {{ site.baseurl | jsonify }},
-      posts: {{ site.posts | map: 'url' | jsonify }}
+      posts: {{ site.posts | map: 'url' | jsonify }},
+      fields: {{ site.data.study_fields | jsonify }}
     };
   </script>
   <script src="{{ '/assets/js/ow.js' | relative_url }}" defer></script>
