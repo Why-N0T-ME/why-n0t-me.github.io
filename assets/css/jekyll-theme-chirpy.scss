@@ -1,0 +1,123 @@
+---
+---
+
+@use 'main
+{%- if jekyll.environment == 'production' -%}
+  .bundle
+{%- endif -%}
+';
+
+/* Overwatch-inspired interface: graphite panels, tactical orange highlights. */
+:root {
+  --ow-orange: #f06424;
+  --ow-orange-light: #ff9b45;
+  --ow-panel: #20262d;
+  --ow-panel-raised: #272e36;
+  --ow-line: rgba(255, 255, 255, 0.12);
+}
+
+html[data-mode='dark'] {
+  --card-bg: var(--ow-panel);
+  --main-bg: #151a20;
+}
+
+body {
+  background-image: radial-gradient(ellipse at 78% 0%, rgba(240, 100, 36, 0.055), transparent 36rem);
+}
+
+#sidebar {
+  border-right: 1px solid var(--ow-line);
+  background: linear-gradient(180deg, #20262d 0%, #171c22 100%);
+}
+
+#sidebar .nav-link {
+  position: relative;
+  border-radius: 3px;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+#sidebar .nav-link:hover,
+#sidebar .nav-link.active {
+  color: #fff;
+  background: linear-gradient(90deg, rgba(240, 100, 36, 0.2), rgba(240, 100, 36, 0.035));
+}
+
+#sidebar .nav-link.active::before {
+  position: absolute;
+  top: 18%;
+  bottom: 18%;
+  left: 0;
+  width: 3px;
+  background: var(--ow-orange);
+  box-shadow: 0 0 12px rgba(240, 100, 36, 0.55);
+  content: '';
+}
+
+#post-list .card-wrapper.card {
+  overflow: hidden;
+  border: 1px solid var(--ow-line);
+  border-radius: 5px;
+  background: linear-gradient(115deg, var(--ow-panel) 0%, #1b2128 100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+#post-list .card-wrapper.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 132, 61, 0.65);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.26), 0 0 18px rgba(240, 100, 36, 0.08);
+}
+
+#post-list .post-preview {
+  border-left: 3px solid transparent;
+  transition: border-color 180ms ease;
+}
+
+#post-list .card-wrapper.card:hover .post-preview {
+  border-left-color: var(--ow-orange);
+}
+
+#post-list .card-title {
+  color: #f3f5f7;
+  letter-spacing: 0.01em;
+}
+
+#post-list .post-preview img {
+  filter: saturate(0.88);
+  transition: filter 180ms ease, transform 300ms ease;
+}
+
+#post-list .card-wrapper.card:hover img {
+  filter: saturate(1.05);
+  transform: scale(1.025);
+}
+
+.post-meta,
+#panel-wrapper .panel-heading {
+  color: var(--ow-orange-light);
+}
+
+#panel-wrapper section {
+  border-left: 1px solid var(--ow-line);
+  padding-left: 1rem;
+}
+
+.post-tag,
+#panel-wrapper .post-tag {
+  border-color: rgba(255, 255, 255, 0.17);
+  border-radius: 3px;
+}
+
+.post-tag:hover,
+#panel-wrapper .post-tag:hover {
+  border-color: var(--ow-orange);
+  color: var(--ow-orange-light);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #sidebar .nav-link,
+  #post-list .card-wrapper.card,
+  #post-list .post-preview img {
+    transition: none;
+  }
+}
