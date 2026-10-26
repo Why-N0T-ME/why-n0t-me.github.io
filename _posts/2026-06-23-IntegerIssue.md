@@ -1,7 +1,7 @@
 ---
 title: "Integer Issues"
 date: 2026-06-23
-categories: [Research]
+categories: ['개발']
 tags: [System, IIS]
 description: Searching about Integer Issues
 image:

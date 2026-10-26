@@ -1,7 +1,7 @@
 ---
 title: "Shellcode Basic"
 date: 2026-06-17
-categories: [Writeup, System]
+categories: ['CTF/Wargame']
 tags: [System, Shellcode, SandBox, seccomp, ORW]
 description: mmap으로 할당된 실행 가능한 메모리에 셸코드를 직접 주입
 image:

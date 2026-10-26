@@ -1,7 +1,7 @@
 ---
 title: "Binary Exploitation Overview"
 date: 2026-06-23
-categories: [Research]
+categories: ['개발']
 tags: [System, PWN]
 description: Binary Exploitation 기법들의 전체 흐름 정리
 image:  

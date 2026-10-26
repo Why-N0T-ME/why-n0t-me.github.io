@@ -1,7 +1,7 @@
 ---
 title: "OS 커맨드 인젝션 & XSS"
 date: 2026-10-11
-categories: [Research]
+categories: ['블로그/기술문서']
 tags: [XSS, Injection]
 description: 크리핵티브 5, 6장 정리
 image:

@@ -1,7 +1,7 @@
 ---
 title: "RSA 정리: 원리와 대표적인 공격 방법"
 date: 2026-10-15
-categories: [Research]
+categories: ['블로그/기술문서']
 tags: [Crypto, RSA]
 description: RSA의 기본 원리와 대표적인 공격 유형(소인수분해, 작은 개인 지수, 교과서적 RSA, 부분 키 노출, 패딩 오라클, 부채널·결함) 정리
 math: true

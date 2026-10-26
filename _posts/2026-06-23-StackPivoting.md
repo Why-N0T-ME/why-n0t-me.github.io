@@ -1,7 +1,7 @@
 ---
 title: "Stack Pivoting"
 date: 2026-06-23 
-categories: [Research]  
+categories: ['개발']
 tags: [System, StackPivoting, ROP]  
 description: Searching about Stack Pivoting and Advanced Exploitation  
 image:  
