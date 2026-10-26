@@ -235,6 +235,24 @@ a.ow-dd-item:hover, a.ow-dd-item:focus-visible { background: rgba(11, 111, 224, 
   display: inline-grid; place-items: center; width: 44px; height: 44px;
   background: none; border: 0; padding: 0; cursor: pointer; color: #fff;
 }
+/* 헤더 아이콘: 입체감 + 하이라이트 + 글로우 (직접 그린 도형) */
+.ow-gem { display: block; flex: none; overflow: visible; --glow: 63, 208, 255; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .55)) drop-shadow(0 0 6px rgba(var(--glow), .5)); transition: filter .2s ease, transform .2s ease; }
+.ow-stat--posts .ow-gem { --glow: 249, 158, 26; }
+.ow-ico--loot .ow-gem { --glow: 255, 210, 63; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .55)) drop-shadow(0 0 8px rgba(var(--glow), .6)); }
+.ow-stat:hover .ow-gem, .ow-stat:focus-visible .ow-gem,
+.ow-ico--loot:hover .ow-gem, .ow-ico--loot:focus-visible .ow-gem {
+  transform: translateY(-1px) scale(1.07);
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .55)) drop-shadow(0 0 11px rgba(var(--glow), .95)) brightness(1.1);
+}
+.ow-stat:focus-visible, .ow-ico--loot:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+@media (prefers-reduced-motion: no-preference) {
+  .ow-ico--loot .ow-gem { animation: ow-gem-glow 3.2s ease-in-out infinite; }
+  @keyframes ow-gem-glow {
+    0%, 100% { filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .55)) drop-shadow(0 0 7px rgba(var(--glow), .5)); }
+    50% { filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .55)) drop-shadow(0 0 12px rgba(var(--glow), .9)); }
+  }
+  .ow-ico--loot:hover .ow-gem, .ow-ico--loot:focus-visible .ow-gem { animation: none; }
+}
 .ow-profile {
   display: block; width: 64px; height: 64px; flex: none; overflow: hidden;
   background: linear-gradient(135deg, var(--orange), #7a3fd0);
@@ -352,6 +370,11 @@ a.ow-tag:hover { background: var(--orange); color: #0a1226; }
   height: 100%; padding: 0 16px 14px 30px; overflow: hidden;
   background: linear-gradient(135deg, var(--c1), var(--c2));
   clip-path: polygon(7% 0, 100% 0, 93% 100%, 0 100%);
+}
+.ow-card-face::before {
+  content: ''; position: absolute; inset: 0 0 0 24%; pointer-events: none;
+  background: var(--art, none) 100% 50% / cover no-repeat;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 38%); mask: linear-gradient(90deg, transparent, #000 38%);
 }
 .ow-card-face::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
@@ -614,14 +637,25 @@ a.ow-pn:hover, a.ow-pn:focus-visible { background: #fff; color: #fff; outline: 0
   clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
 }
 .ow-catface {
+  position: relative; overflow: hidden;
   display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; height: 100%; padding: 0 24px 22px 40px;
   background: linear-gradient(135deg, var(--c1), var(--c2));
   clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
 }
+.ow-catface::before {
+  content: ''; position: absolute; inset: 0 0 0 20%; pointer-events: none;
+  background: var(--art, none) 100% 50% / cover no-repeat;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 30%); mask: linear-gradient(90deg, transparent, #000 30%);
+}
+.ow-catface::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(0, 0, 0, .42), rgba(0, 0, 0, 0) 58%);
+}
+.ow-catface > * { position: relative; z-index: 1; }
 .ow-catcount { font: 700 56px/1 var(--font-num); }
 .ow-catname { font: 900 italic 24px/1.2 var(--font); }
 .ow-catlatest {
-  font-size: 13px; opacity: .92;
+  max-width: 58%; font-size: 13px; opacity: .92;
   display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
 }
 a.ow-catcard:hover, a.ow-catcard:focus-visible { background: #fff; color: #fff; outline: 0; }
@@ -744,7 +778,7 @@ a.ow-stat-card:hover, a.ow-stat-card:focus-visible { background: #fff; color: #f
   }
   .ow-play span { font-size: 24px; clip-path: polygon(0 0, 100% 0, 96% 100%, 4% 100%); }
   .ow-tools { order: 2; margin-left: 0; padding-right: 0; gap: 4px; }
-  .ow-tools .ow-ico:not(#ow-settings-btn) { display: none; }
+  .ow-tools .ow-ico:not(#ow-settings-btn):not(.ow-ico--loot) { display: none; }
   .ow-profile { width: 44px; height: 44px; }
   .ow-nav { order: 3; width: 100%; height: 48px; border-top: 1px solid var(--bar-line); }
   .ow-navlink { height: 48px; padding: 0 16px; font-size: 16px; }

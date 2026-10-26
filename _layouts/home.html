@@ -27,19 +27,20 @@ layout: default
       {%- assign c_posts = site.categories[c.name] -%}
       {%- assign c_n = c_posts | size -%}
       {%- assign c_post = c_posts | first -%}
+      {%- capture c_style -%}--c1:{{ c.from }};--c2:{{ c.to }}{% if c.image %};--art:url('{{ c.image | relative_url }}'){% endif %}{%- endcapture -%}
       {%- if c_n > 0 -%}
-      <a class="ow-card{% unless sel_done %} is-sel{% endunless %}" href="{{ c_post.url | relative_url }}" style="--c1:{{ c.from }};--c2:{{ c.to }}">
+      <a class="ow-card{% unless sel_done %} is-sel{% endunless %}" href="{{ c_post.url | relative_url }}" style="{{ c_style }}">
         <span class="ow-card-face">
-          {%- if c_post.image.path -%}
+          {%- unless c.image -%}{%- if c_post.image.path -%}
           <img class="ow-card-img" src="{{ c_post.image.path | relative_url }}" alt="{{ c_post.title | escape }} 썸네일" loading="lazy" decoding="async">
-          {%- endif -%}
+          {%- endif -%}{%- endunless -%}
           <span class="ow-card-cat">{{ c.name }}</span>
           <span class="ow-card-title">{{ c_post.title | escape }}</span>
         </span>
       </a>
       {%- assign sel_done = true -%}
       {%- else -%}
-      <div class="ow-card is-empty" style="--c1:{{ c.from }};--c2:{{ c.to }}">
+      <div class="ow-card is-empty" style="{{ c_style }}">
         <span class="ow-card-face">
           <span class="ow-card-cat">{{ c.name }}</span>
           <span class="ow-card-title">준비 중</span>

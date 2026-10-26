@@ -14,8 +14,9 @@ layout: default
       {%- assign c_n = c_posts | size -%}
       {%- assign c_post = c_posts | first -%}
       {%- assign c_slug = c.name | slugify | url_encode -%}
+      {%- capture c_style -%}--c1:{{ c.from }};--c2:{{ c.to }}{% if c.image %};--art:url('{{ c.image | relative_url }}'){% endif %}{%- endcapture -%}
       {%- if c_n > 0 -%}
-      <a class="ow-catcard" href="{{ '/categories/' | append: c_slug | append: '/' | relative_url }}" style="--c1:{{ c.from }};--c2:{{ c.to }}">
+      <a class="ow-catcard" href="{{ '/categories/' | append: c_slug | append: '/' | relative_url }}" style="{{ c_style }}">
         <span class="ow-catface">
           <b class="ow-catcount">{{ c_n }}</b>
           <span class="ow-catname">{{ c.name }}</span>
@@ -23,7 +24,7 @@ layout: default
         </span>
       </a>
       {%- else -%}
-      <div class="ow-catcard is-empty" style="--c1:{{ c.from }};--c2:{{ c.to }}">
+      <div class="ow-catcard is-empty" style="{{ c_style }}">
         <span class="ow-catface">
           <b class="ow-catcount">0</b>
           <span class="ow-catname">{{ c.name }}</span>
