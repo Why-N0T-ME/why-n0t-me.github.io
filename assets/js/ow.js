@@ -1,5 +1,5 @@
 /* Overwatch UI blog — 동작 스크립트 (의존성 없음)
-   1 설정(테마·전체화면)  2 Categories 메뉴  3 랜덤 글  4 글 상세(목차·진행률·키보드)
+   0 예전 PWA 정리  1 설정(테마·전체화면)  2 Categories 메뉴  3 랜덤 글  4 글 상세(목차·진행률·키보드)
    5 본문 다듬기(코드 헤더·표) */
 (function () {
   'use strict';
@@ -9,6 +9,20 @@
 
   function $(sel, ctx) { return (ctx || doc).querySelector(sel); }
   function $$(sel, ctx) { return Array.prototype.slice.call((ctx || doc).querySelectorAll(sel)); }
+
+  /* 0. 예전 Chirpy(PWA)가 남긴 서비스 워커·캐시 정리 ------------------------- */
+  try {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (list) {
+        list.forEach(function (r) { r.unregister(); });
+      }).catch(function () {});
+    }
+    if (window.caches && window.caches.keys) {
+      window.caches.keys().then(function (keys) {
+        keys.forEach(function (k) { window.caches.delete(k); });
+      }).catch(function () {});
+    }
+  } catch (e) { /* 지원하지 않는 환경이면 무시 */ }
 
   function store(key, val) {
     try {
