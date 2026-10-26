@@ -1,5 +1,5 @@
 ---
-title: "[Dreamhack] Squared Flag 풀이"
+title: "Squared Flag"
 date: 2026-10-06
 categories: ['CTF/Wargame']
 tags: [Dreamhack, SageMath, Linear-Equation]

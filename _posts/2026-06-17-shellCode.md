@@ -1,5 +1,5 @@
 ---
-title: "Shellcode Basic"
+title: "shell_basic"
 date: 2026-06-17
 categories: ['CTF/Wargame']
 tags: [System, Shellcode, SandBox, seccomp, ORW]

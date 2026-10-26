@@ -1,5 +1,5 @@
 ---
-title: "RSA 정리: 원리와 대표적인 공격 방법"
+title: "RSA 정리"
 date: 2026-10-15
 categories: ['블로그/기술문서']
 tags: [Crypto, RSA]

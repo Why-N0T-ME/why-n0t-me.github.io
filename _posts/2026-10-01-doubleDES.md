@@ -1,5 +1,5 @@
 ---
-title: "[Dreamhack] double-DES 풀이"
+title: "double-DES"
 date: 2026-10-01
 categories: ['CTF/Wargame']
 tags: [Dreamhack, Crypto, DES, Meet-in-the-Middle]

@@ -1,5 +1,5 @@
 ---
-title: "암호학 입문: 고전 암호와 현대 암호의 체계"
+title: "암호학 입문"
 date: 2026-10-01
 categories: ['블로그/기술문서']
 tags: [Crypto]
