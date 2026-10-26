@@ -16,7 +16,10 @@ script_includes:
     {% if page.description %}<p>{{ page.description }}</p>{% endif %}
     <div class="ow-report-meta">
       <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y.%m.%d' }}</time>
-      {% for tag in page.tags %}<a href="{{ '/tags/' | append: tag | slugify | append: '/' | relative_url }}">#{{ tag }}</a>{% endfor %}
+      {% for tag in page.tags %}
+        {% assign tag_slug = tag | slugify %}
+        <a href="{{ '/tags/' | append: tag_slug | append: '/' | relative_url }}">#{{ tag }}</a>
+      {% endfor %}
     </div>
   </header>
   {% if page.image %}
