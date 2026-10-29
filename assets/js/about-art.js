@@ -297,12 +297,40 @@
       px = cx + Math.cos(a) * r; py = cy + Math.sin(a) * r;
       pts.push([px, py]);
       dot(g, px, py, 3.2);
+      txt(g, String(k), cx + Math.cos(a) * (r + 15), cy + Math.sin(a) * (r + 15) + 4, 13, 'co-f co-f2');   // 원소 번호
     }
     S('path', { d: pathOf(pts, true), 'class': 'co-ln co-dash' }, g);
     dot(g, cx, cy, 2);
     a = (-90 + 360 / n) * PI / 180;
     arrow(g, cx, cy, cx + Math.cos(a) * (r - 4), cy + Math.sin(a) * (r - 4));
-    txt(g, 'ℤ/8ℤ', cx, cy + r + 26, 18);
+    /* 시계 밑에: 어떤 집합인지 */
+    txt(g, 'ℤ/8ℤ', cx, cy + r + 42, 19);
+    txt(g, '{0, 1, 2, …, 7}', cx, cy + r + 65, 16);
+  }
+  /* 준동형사상 φ: G → H 를 집합 그림으로. 핵(ker φ)은 H 의 항등원 e_H 로, 나머지는 상(im φ)으로 간다 */
+  function figHomo(g, cx, cy) {
+    var gx = cx - 86, hx = cx + 86;
+    function el(x, y, rx, ry, cls) { return S('ellipse', { cx: f1(x), cy: f1(y), rx: rx, ry: ry, 'class': cls }, g); }
+    function map(p, q) {
+      var dx = q[0] - p[0], dy = q[1] - p[1], l = Math.sqrt(dx * dx + dy * dy) || 1;
+      arrow(g, p[0] + dx / l * 6, p[1] + dy / l * 6, q[0] - dx / l * 6, q[1] - dy / l * 6, 'co-ln');
+    }
+    el(gx, cy, 54, 46, 'co-ln co-soft');              // G
+    el(hx, cy, 54, 46, 'co-ln co-soft');              // H
+    el(gx - 12, cy + 18, 28, 17, 'co-ln co-dash');    // ker φ
+    el(hx - 2, cy + 2, 40, 32, 'co-ln co-dash');      // im φ
+    var k1 = [gx - 24, cy + 16], k2 = [gx - 4, cy + 22], a1 = [gx - 12, cy - 22], a2 = [gx + 24, cy - 8];
+    var e = [hx - 26, cy + 8], b1 = [hx + 8, cy - 20], b2 = [hx + 24, cy - 4], c = [hx + 34, cy - 26];
+    [k1, k2, a1, a2, e, b1, b2, c].forEach(function (p) { dot(g, p[0], p[1], 3.2); });
+    map(k1, e); map(k2, e); map(a1, b1); map(a2, b2);
+    mtext(g, 'e_H', e[0] + 7, e[1] + 5, 16, 'co-f', 'start');
+    arrow(g, cx - 42, cy - 54, cx + 42, cy - 54);
+    txt(g, 'φ', cx, cy - 62, 20);
+    txt(g, 'G', gx - 60, cy - 36, 20, 'co-f', 'end');
+    txt(g, 'H', hx + 58, cy - 32, 20, 'co-f', 'start');
+    txt(g, 'ker φ', gx - 12, cy + 64, 16);
+    txt(g, 'im φ', hx - 2, cy + 62, 16);
+    txt(g, 'φ(ab) = φ(a)φ(b)', cx, cy + 92, 20);
   }
   function figLattice(g, cx, cy) {
     var i, j;
@@ -388,10 +416,11 @@
       F('Σ 1/n^2 = π^2/6', 500, T + 300, 22);
       F('‖f‖_2', 290, T + 335, 22);
     } else if (i === 1) {
-      figRoots(g, X(275), T + 120, 52, 8);
+      figRoots(g, X(300), T + 112, 52, 8);
+      figHomo(g, X(385), T + 345);
       B('ℤ', 815, T + 215, 190);
       F('y^2 = x^3 + ax + b', 620, T + 70, 22);
-      F('|G| = [G:H]·|H|', 500, T + 300, 22);
+      F('|G| = [G:H]·|H|', 780, T + 10, 22);
     } else if (i === 2) {
       figLattice(g, X(275), T + 110);
       figMatrix(g, X(810), T + 100);
