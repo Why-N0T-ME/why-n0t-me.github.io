@@ -4,8 +4,8 @@ title: 자기소개
 description: 보안과 암호학을 배우며 기록하는 사람, Choi입니다.
 permalink: /about/
 
-display_name: Choi
-headline: 보안과 암호학을 배우며 기록하는 사람
+display_name: Choi\Topiary
+headline: 보안과 암호학을 배우며 기록하는 시민1
 intro: >-
   보안 기술을 배우며 시스템이 동작하는 원리를 살펴보고, 취약점이 생기는 이유와 대응 방법을 공부하고 있습니다. 현재는 암호학에 관심이 있으며, 암호쟁이가 되어보고자 수학을 하고있습니다. 재밌다 하하
 
@@ -21,12 +21,8 @@ links:
 interests:
   - name: 웹 보안
     desc: 웹 애플리케이션 취약점과 방어 기법
-  - name: 네트워크 보안
-    desc: 프로토콜, 트래픽, 인프라 구조
-  - name: 시스템 보안
-    desc: 바이너리 익스플로잇과 리버스 엔지니어링
   - name: 암호학
-    desc: 고전·현대 암호와 정수론, 선형대수 기초
+    desc: 현대 암호와 정수론, 선형대수
 
 # 아래 두 항목은 내용이 있을 때만 화면에 나타납니다. 앞의 # 을 지우고 채우세요.
 # timeline:
