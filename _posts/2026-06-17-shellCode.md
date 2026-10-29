@@ -4,9 +4,6 @@ date: 2026-06-17
 categories: ['CTF/Wargame']
 tags: [System, Shellcode, SandBox, seccomp, ORW]
 description: mmap으로 할당된 실행 가능한 메모리에 셸코드를 직접 주입
-image:
-  path: /assets/img/posts/shellCode/logo.png
-  alt: thumbnail
 ---
 
 ## Concept
@@ -262,6 +259,6 @@ p.interactive()
 
 서버 연결 후 셸코드를 전송하면 다음과 같이 플래그가 출력된다.
 
-![flag](/assets/img/posts/shellCode/flag.png)
+![flag](/assets/img/posts/ctf/system/shellcode/flag.png)
 
 > `DH{ca562d7cf1db6c55cb11c4ec350a3c0b}`

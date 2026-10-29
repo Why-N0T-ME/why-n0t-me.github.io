@@ -4,9 +4,6 @@ date: 2026-06-23
 categories: ['블로그/기술문서']
 tags: [System, IIS]
 description: Searching about Integer Issues
-image:
-  path: /assets/img/posts/IntegerIssue/logo.png
-  alt: thumbnail
 ---
 
 ## Concept

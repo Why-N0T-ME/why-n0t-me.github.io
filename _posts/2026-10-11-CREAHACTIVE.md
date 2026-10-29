@@ -4,9 +4,6 @@ date: 2026-10-11
 categories: ['블로그/기술문서']
 tags: [XSS, Injection]
 description: 크리핵티브 5, 6장 정리
-image:
-  path: /assets/img/posts/xss/cover.png
-  alt: thumbnail
 ---
 
 

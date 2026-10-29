@@ -27,9 +27,9 @@ social:
   links:
     - https://github.com/why-n0t-me
 
-# 프로필 사진 (원본 assets/img/avatar.png 는 2MB 라서 줄여 둔 파일을 씁니다)
-avatar: /assets/img/profile.jpg
-avatar_small: /assets/img/profile-sm.jpg
+# 프로필 사진 (원본 assets/img/site/avatar.png 는 2MB 라서 줄여 둔 파일을 씁니다)
+avatar: /assets/img/site/profile.jpg
+avatar_small: /assets/img/site/profile-sm.jpg
 
 plugins:
   - jekyll-paginate

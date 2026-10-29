@@ -4,9 +4,6 @@ date: 2026-06-23
 categories: ['블로그/기술문서']
 tags: [System, StackPivoting, ROP]  
 description: Searching about Stack Pivoting and Advanced Exploitation  
-image:  
-    path: /assets/img/posts/StackPivoting/logo.png
-    alt: thumbnail
 ---
 ## Introduction
 
@@ -100,10 +97,10 @@ gcc -o target target.c -fno-stack-protector -no-pie
 * global_buff: 가짜스택으로 쓸 공간으로 맨 앞 8바이트는 더미 데이터를 채우고 그 뒤에는 실행시키고 싶은 ROP 체인 가젯들을 나열
 * stack: 더미데이터(32바이트) + global_buff주소 + leave; ret 가젯주소 + 더미데이터(8바이트)
 
-![main](/assets/img/posts/StackPivoting/main.png)
+![main](/assets/img/posts/notes/system/stack-pivoting/main.png)
 > main함수의 디스어셈블 결과
 
-![ROPgadget](/assets/img/posts/StackPivoting/gadget1.png)
+![ROPgadget](/assets/img/posts/notes/system/stack-pivoting/gadget1.png)
 > main 바이너리 내부에는 pop rdi 가젯이 없음 -> 바이너리에 포함된 puts함수를 이용해 이 함수의 메모리 주소(GOT)를 leak
 > libc 내부에 있는 pop rdi 가젯을 사용
 > 알아낸 주소로 lib_base를 구하고 라이브러리 내의 system함수와 "/bin/sh"문자열 주소를 획득해 쉘 실행

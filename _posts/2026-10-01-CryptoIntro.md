@@ -4,9 +4,6 @@ date: 2026-10-01
 categories: ['블로그/기술문서']
 tags: [Crypto]
 description: 암호학 입문 - 고전 암호와 현대 암호를 비교하고, 현대 암호가 어떤 체계로 동작하는지 알아본다
-image:
-    path: /assets/img/posts/Crypto/logo.png
-    alt: thumbnail
 ---
 
 ## 고전 암호

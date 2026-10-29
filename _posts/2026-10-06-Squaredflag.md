@@ -7,9 +7,6 @@ categories: ['CTF/Wargame']
 tags: [Dreamhack, SageMath, Linear-Equation]
 description: Squared Flag 풀이 - M · flag = result 꼴의 선형방정식을 SageMath의 solve_right()로 풀어 flag를 구한다
 math: true
-image:
-    path: /assets/img/posts/Crypto/Challenges/squared-flag/thumbnail.png
-    alt: thumbnail
 ---
 
 ## 문제 정보
@@ -31,7 +28,7 @@ image:
 - 제공 파일: `M.py`(행렬 `M`)
 - 목표: `result`와 `M`으로부터 `flag` 복구
 
-![img](/assets/img/posts/Crypto/Challenges/squared-flag/M.png)
+![img](/assets/img/posts/ctf/crypto/squared-flag/m.png)
 _M.py의 일부_
 
 ## 분석
@@ -131,7 +128,7 @@ print(v)
 {: file="main.py" }
 
 ### 실행 결과
-![flag](/assets/img/posts/Crypto/Challenges/squared-flag/flag.png)
+![flag](/assets/img/posts/ctf/crypto/squared-flag/flag.png)
 
 ## 정리
 

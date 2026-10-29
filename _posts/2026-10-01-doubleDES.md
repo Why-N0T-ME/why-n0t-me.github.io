@@ -7,9 +7,6 @@ categories: ['CTF/Wargame']
 tags: [Dreamhack, Crypto, DES, Meet-in-the-Middle]
 description: double-DES 풀이 - 이중 DES 키 탐색을 Meet-in-the-Middle로 줄여 flag를 얻는다
 math: true
-image:
-    path: /assets/img/posts/Crypto/Challenges/double-des/logo.png
-    alt: thumbnail
 ---
 
 ## 문제 정보
@@ -143,7 +140,7 @@ for i in trange(2**32):
 ```
 {: file="dumbway.py"}
 
-![img](/assets/img/posts/Crypto/Challenges/double-des/dumbway.png)
+![img](/assets/img/posts/ctf/crypto/double-des/dumbway.png)
 
 > 15초 제한 안에 $$2^{32}$$번의 DES 연산을 하는 것은 불가능하다. 두 키를 한꺼번에 대입하지 않고 나누어 탐색하는 다른 접근이 필요하다.
 {: .prompt-warning }
@@ -288,7 +285,7 @@ print(flag.decode())
 
 ### 실행 결과
 
-![img](/assets/img/posts/Crypto/Challenges/double-des/flag.png)
+![img](/assets/img/posts/ctf/crypto/double-des/flag.png)
 
 ## 정리
 
