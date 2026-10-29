@@ -507,12 +507,113 @@ a.pn:hover { border-color: var(--muted); }
   .defs b { flex-basis: 100%; }
 }
 
+/* 10-2. About: 수학 롤러코스터 ------------------------------------------- */
+.co-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 24px; }
+.co-head h2 { margin: 0; font: 700 24px/1.4 var(--serif); }
+.co-head h2 .no { margin-right: 14px; font: 400 13px var(--mono); color: var(--muted); }
+.co-skip { display: inline-flex; align-items: center; min-height: 44px; font: 400 13px var(--mono); color: var(--muted); }
+.co-skip:hover { color: var(--ink); }
+.co-lead { margin: 0; max-width: 640px; color: var(--ink2); word-break: keep-all; }
+.co-track { height: 520vh; margin-top: 20px; }
+.co-stage {
+  position: sticky; top: 16px; height: min(calc(100vh - 32px), 760px); height: min(calc(100svh - 32px), 760px);
+  border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden;
+}
+.co-svg, .co-svg svg { display: block; width: 100%; height: 100%; }
+.is-static .co-track { height: auto; }
+.is-static .co-stage { position: static; height: auto; }
+.is-static .co-svg svg { height: auto; }
+.is-static .co-card, .is-static .co-dots, .is-static .co-hint { display: none; }
+
+.co-card {
+  position: absolute; left: 16px; bottom: 16px; width: min(320px, calc(100% - 32px)); padding: 12px 16px 14px;
+  border: 1px solid var(--line); border-radius: 4px; background: color-mix(in srgb, var(--surface) 94%, transparent);
+  pointer-events: none;
+}
+.co-card .co-no { font: 400 12px var(--mono); color: var(--muted); }
+.co-card .co-name { margin-top: 2px; font: 700 22px/1.35 var(--serif); word-break: keep-all; }
+.co-card .co-sub { margin-top: 2px; font-size: 14px; line-height: 1.6; color: var(--ink2); word-break: keep-all; }
+.co-card .co-op { margin-top: 8px; font: 500 14px var(--mono); color: var(--accent); white-space: pre; }
+.co-endmsg { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.7; color: var(--ink2); word-break: keep-all; }
+.co-card.is-end .co-endmsg { display: block; }
+.co-card.is-end .co-op { display: none; }
+
+.co-hint {
+  position: absolute; top: 14px; left: 0; right: 0; text-align: center; pointer-events: none;
+  font: 400 12px var(--mono); color: var(--muted);
+}
+.co-dots { position: absolute; right: 0; top: 50%; transform: translateY(-50%); margin: 0; padding: 0; list-style: none; }
+.co-dots button { width: 44px; height: 34px; display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer; }
+.co-dots button::before { content: ''; width: 8px; height: 8px; border: 1.5px solid var(--muted); border-radius: 50%; background: var(--surface); }
+.co-dots button:hover::before { border-color: var(--ink); }
+.co-dots button[aria-current]::before { background: var(--accent); border-color: var(--accent); }
+
+/* 장면 안의 그림 */
+.co-svg {
+  --rc-fur: #a9b0bb; --rc-belly: #dfe2e7; --rc-dark: #232832; --rc-edge: #12161c; --rc-eye: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .co-svg { --rc-fur: #8f98a8; --rc-belly: #c9cfda; --rc-dark: #090b0f; --rc-edge: #05070a; --rc-eye: #f4f6fa; }
+}
+:root[data-theme="dark"] .co-svg { --rc-fur: #8f98a8; --rc-belly: #c9cfda; --rc-dark: #090b0f; --rc-edge: #05070a; --rc-eye: #f4f6fa; }
+
+.co-svg text { fill: var(--art); font-family: var(--mono); font-weight: 500; letter-spacing: .01em; white-space: pre; }
+.co-svg .co-f { fill-opacity: .62; }
+.co-svg .co-f2 { fill-opacity: .38; }
+.co-svg .co-strong { fill-opacity: .9; font-weight: 600; }
+.co-svg .co-k { font-family: var(--sans); }
+.co-svg .co-big { fill-opacity: .085; font-family: var(--serif); font-weight: 400; }
+.co-svg .co-big2 { fill-opacity: .16; font-family: var(--mono); }
+.co-svg .co-no { fill: var(--muted); fill-opacity: 1; font-weight: 400; }
+.co-svg .co-name { fill: var(--ink); fill-opacity: .82; font-family: var(--serif); font-weight: 700; letter-spacing: 0; }
+.co-svg .co-grid { fill: none; stroke: var(--art); stroke-opacity: .08; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.co-svg .co-sep { stroke: var(--art); stroke-opacity: .32; stroke-width: 1; stroke-dasharray: 3 6; vector-effect: non-scaling-stroke; }
+.co-svg .co-ln { fill: none; stroke: var(--art); stroke-opacity: .5; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.co-svg .co-hl { stroke-opacity: .85; stroke-width: 1.6; }
+.co-svg .co-dash { stroke-dasharray: 3 4; stroke-opacity: .55; }
+.co-svg .co-soft { fill: var(--art); fill-opacity: .06; }
+.co-svg .co-pt { fill: var(--art); fill-opacity: .6; stroke: none; }
+.co-svg .co-ah { fill: var(--art); fill-opacity: .85; stroke: none; }
+
+.co-svg .co-rail { fill: none; stroke: var(--ink2); stroke-opacity: .5; stroke-linecap: round; stroke-linejoin: round; }
+.co-svg .co-ties { fill: none; stroke: var(--ink2); stroke-opacity: .28; }
+.co-svg .co-trav { fill: none; stroke: var(--accent); stroke-linecap: round; stroke-linejoin: round; }
+.co-svg .co-ring { fill: none; stroke: var(--ink2); stroke-width: 2; stroke-opacity: .8; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.co-svg .co-tan { stroke: var(--accent); stroke-width: 1.6; stroke-dasharray: 5 5; vector-effect: non-scaling-stroke; }
+.co-svg .co-ball-c { fill: var(--accent); stroke: var(--surface); }
+.co-svg .co-ball-h { fill: #fff; fill-opacity: .75; }
+.co-svg .co-ledge-top { stroke: var(--ink2); stroke-width: 2.4; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.co-svg .co-ledge .co-ln { stroke: var(--ink2); stroke-opacity: .45; }
+
+.co-svg .rc-fur { fill: var(--rc-fur); }
+.co-svg .rc-belly { fill: var(--rc-belly); }
+.co-svg .rc-dark { fill: var(--rc-dark); }
+.co-svg .rc-eye { fill: var(--rc-eye); }
+.co-svg .rc-edge { stroke: var(--rc-edge); stroke-width: 1.4; stroke-opacity: .7; }
+.co-svg .rc-tail-line { fill: none; stroke: var(--rc-edge); stroke-opacity: .7; stroke-width: 22.5; stroke-linecap: round; }
+.co-svg .rc-tail { fill: none; stroke: var(--rc-fur); stroke-width: 20; stroke-linecap: round; }
+.co-svg .rc-rings { fill: none; stroke: var(--rc-dark); stroke-width: 20.2; stroke-dasharray: 8 15; stroke-dashoffset: -3; }
+.co-svg .rc-limb { fill: none; stroke: var(--rc-fur); stroke-width: 9; stroke-linecap: round; }
+.co-svg .rc-mouth { fill: none; stroke: var(--rc-dark); stroke-width: 1.4; stroke-linecap: round; }
+
+.co-svg .sp-stem { fill: none; stroke: var(--tip); stroke-width: 3.4; stroke-linecap: round; }
+.co-svg .sp-leaf { fill: var(--tip); fill-opacity: .92; stroke: none; }
+
+@media (max-width: 720px) {
+  .co-head h2 { font-size: 22px; }
+  .co-dots { display: none; }
+  .co-card { left: 10px; right: 10px; bottom: 10px; width: auto; padding: 10px 14px 12px; }
+  .co-card .co-name { font-size: 20px; }
+  .co-card .co-sub { font-size: 13px; }
+  .co-endmsg { font-size: 13px; }
+}
+
 /* 11. 움직임·인쇄 --------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; transition: none !important; }
 }
 @media print {
-  .bar, .foot, .toc, .art-bar, .hero-art, .pn-wrap, .code-copy { display: none !important; }
+  .bar, .foot, .toc, .art-bar, .hero-art, .pn-wrap, .code-copy, .coaster { display: none !important; }
   body { background: #fff; color: #000; }
   .post-grid { display: block; }
 }

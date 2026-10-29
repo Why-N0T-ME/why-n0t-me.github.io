@@ -17,6 +17,9 @@
   {%- if page.layout == 'home' -%}
   <script src="{{ '/assets/js/hero-art.js' | relative_url }}" defer></script>
   {%- endif -%}
+  {%- if page.layout == 'about' -%}
+  <script src="{{ '/assets/js/about-art.js' | relative_url }}" defer></script>
+  {%- endif -%}
   <script src="{{ '/assets/js/main.js' | relative_url }}" defer></script>
 </body>
 </html>

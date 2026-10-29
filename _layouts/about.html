@@ -24,6 +24,34 @@ layout: default
     </div>
   </section>
 
+  {%- comment -%}
+    수학 롤러코스터. 내용(층의 이름·설명)은 assets/js/about-art.js 의 LAYERS 에서 고칩니다.
+    스크립트가 켜진 브라우저에서만 보입니다. (hidden 은 스크립트가 풀어 줍니다)
+  {%- endcomment -%}
+  <section class="block coaster" aria-labelledby="ab-coaster" data-coaster hidden>
+    <div class="co-head">
+      <h2 id="ab-coaster"><span class="no">↓</span>수학 롤러코스터</h2>
+      <a class="co-skip" href="#co-end">건너뛰기 ↓</a>
+    </div>
+    <p class="co-lead">스크롤하면 라쿤이 공을 던집니다. 공은 함수 트랙을 타고 내려가며, 갈수록 더 단순하고 근본적인 수학을 지나 맨 밑의 ∅에 닿습니다.</p>
+    <ol class="sr-only" data-co-list aria-label="지나가는 수학의 층"></ol>
+    <div class="co-track" data-co-track>
+      <div class="co-stage" data-co-stage>
+        <div class="co-svg" data-co-svg></div>
+        <div class="co-hint" data-co-hint aria-hidden="true">스크롤 ↓</div>
+        <ol class="co-dots" data-co-dots aria-label="층으로 이동"></ol>
+        <div class="co-card" data-co-card>
+          <div class="co-no" data-co-no>01 / 09</div>
+          <div class="co-name" data-co-name>해석학</div>
+          <div class="co-sub" data-co-sub></div>
+          <div class="co-op" data-co-op></div>
+          <div class="co-endmsg">아무것도 없는 곳(∅)에서 새싹이 핍니다. 위로 올라갈수록 복잡해지는 수학도 여기서 시작합니다.</div>
+        </div>
+      </div>
+    </div>
+    <span id="co-end"></span>
+  </section>
+
   {%- if page.interests -%}
   {%- assign n = n | plus: 1 -%}
   <section class="block" aria-labelledby="ab-interest">

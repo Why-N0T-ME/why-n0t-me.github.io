@@ -1,5 +1,5 @@
 /* 연구 노트형 블로그 스크립트 (의존성 없음)
-   1. 예전 서비스 워커 정리  2. 화면 모드 버튼  3. 히어로 애니메이션 시작
+   1. 예전 서비스 워커 정리  2. 화면 모드 버튼  3. 히어로·About 애니메이션 시작
    4. 글의 목차와 현재 위치  5. 코드 블록 머리글·복사, 표 감싸기 */
 (function () {
   'use strict';
@@ -51,6 +51,12 @@
   var hero = $('[data-art]');
   if (hero && window.HeroArt) {
     try { window.HeroArt.init(hero); } catch (e) { /* 애니메이션이 없어도 페이지는 정상 */ }
+  }
+
+  /* 3-2. About 의 수학 롤러코스터 ------------------------------------------- */
+  var coaster = $('[data-coaster]');
+  if (coaster && window.AboutArt) {
+    try { window.AboutArt.init(coaster); } catch (e) { coaster.hidden = true; /* 실패하면 이 구역만 숨긴다 */ }
   }
 
   /* 4. 글: 목차와 현재 위치 ------------------------------------------------- */
