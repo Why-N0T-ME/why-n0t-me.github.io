@@ -1,22 +1,26 @@
 ---
 layout: default
 ---
-{%- assign shown = 0 -%}
-{%- for c in site.data.categories -%}
-  {%- assign c_n = site.categories[c.name] | size -%}
-  {%- if c_n > 0 -%}{%- assign shown = shown | plus: 1 -%}{%- endif -%}
-{%- endfor -%}
+{%- comment -%}
+  분야 목록. 순서와 설명은 _data/categories.yml 에서 가져옵니다.
+  글이 있는 분야를 먼저, 글이 없는 분야(0)는 링크 없이 뒤에 보여 줍니다. (글을 쓰면 자동으로 위로 올라갑니다)
+{%- endcomment -%}
 <div class="wrap page-main">
   <header class="pagehead">
-    <div class="eyebrow"><i></i>Categories · {{ shown }}개 분야</div>
+    <div class="eyebrow"><i></i>Categories · {{ site.data.categories | size }}개 분야</div>
     <h1>{{ page.title | escape }}</h1>
     <p>전체 {{ site.posts | size }}편을 분야별로 나눠 봅니다.</p>
   </header>
 
   <div class="catgrid">
+    {%- for pass in (1..2) -%}
     {%- for c in site.data.categories -%}
       {%- assign c_posts = site.categories[c.name] -%}
       {%- assign c_n = c_posts | size -%}
+      {%- assign want = false -%}
+      {%- if pass == 1 and c_n > 0 -%}{%- assign want = true -%}{%- endif -%}
+      {%- if pass == 2 and c_n == 0 -%}{%- assign want = true -%}{%- endif -%}
+      {%- if want -%}
       {%- if c_n > 0 -%}
       {%- assign c_slug = c.name | slugify | url_encode -%}
       <article class="catcard">
@@ -31,7 +35,18 @@ layout: default
           {%- endfor -%}
         </ul>
       </article>
+      {%- else -%}
+      <article class="catcard is-empty">
+        <div class="catcard-top">
+          <h2>{{ c.name }}</h2>
+          <span class="catcard-n">0</span>
+        </div>
+        {%- if c.desc -%}<p>{{ c.desc }}</p>{%- endif -%}
+        <p class="catcard-none">아직 글이 없습니다</p>
+      </article>
       {%- endif -%}
+      {%- endif -%}
+    {%- endfor -%}
     {%- endfor -%}
   </div>
 </div>

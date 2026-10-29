@@ -97,11 +97,18 @@ layout: default
     <aside class="split-side" aria-label="분야와 기록">
       <div class="side-head"><span class="no">03</span><h2>분야</h2></div>
       <div class="cats">
+        {%- comment -%} 글이 있는 분야를 먼저, 글이 없는 분야(0)는 링크 없이 뒤에 보여 줍니다. {%- endcomment -%}
         {%- for c in site.data.categories -%}
           {%- assign c_n = site.categories[c.name] | size -%}
           {%- if c_n > 0 -%}
           {%- assign c_slug = c.name | slugify | url_encode -%}
           <a href="{{ '/categories/' | append: c_slug | append: '/' | relative_url }}"><span>{{ c.name }}</span><b>{{ c_n }}</b></a>
+          {%- endif -%}
+        {%- endfor -%}
+        {%- for c in site.data.categories -%}
+          {%- assign c_n = site.categories[c.name] | size -%}
+          {%- if c_n == 0 -%}
+          <div class="off"><span>{{ c.name }}</span><b>0</b></div>
           {%- endif -%}
         {%- endfor -%}
       </div>
