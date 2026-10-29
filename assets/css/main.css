@@ -2,7 +2,7 @@
    - 색: 파랑 하나만 포인트로 쓰고, 나머지는 파란 기운이 도는 중립색
    - 글꼴: 제목 Noto Serif KR / 본문 IBM Plex Sans KR / 메타·코드 IBM Plex Mono
    - 모서리 4px, 1px 가는 선, 그림자 없음
-   - 라이트/다크: 기본은 기기 설정을 따르고, 화면 위 버튼으로 바꾸면 저장됩니다. */
+   - 라이트/다크/다크 그린: 기본은 기기 설정을 따르고, 화면 위 버튼으로 바꾸면 저장됩니다. */
 
 /* 1. 색과 글꼴 ------------------------------------------------------------ */
 :root {
@@ -50,6 +50,16 @@
   --tip: #6fcf97; --warn: #e3b341; --danger: #ff8a80;
   --c-com: #8791a1; --c-kw: #c4a7ff; --c-str: #8ee2b0; --c-num: #ffb86b; --c-fn: #8ca2ff;
   --c-ty: #7dd3fc; --c-op: #b0b8c4; --c-meta: #f0abfc; --c-tag: #ff9aa8; --c-del: #ff8a80; --c-ins: #86efac;
+  color-scheme: dark;
+}
+/* 다크 그린: 숲 속 같은 짙은 초록 바탕에 민트를 포인트로. 위의 다크 값을 전부 덮어씁니다 */
+:root[data-theme="green"] {
+  --bg: #0c1713; --surface: #11211a; --ink: #e3efe7; --ink2: #b2c7ba; --muted: #86a393;
+  --line: #213a2e; --accent: #7be0b0; --accent-ink: #07120d; --grid: #172b22; --art: #7be0b0;
+  --code-bg: #0e1b15; --code-head: #14261d; --inline-code: #172c22;
+  --tip: #8fe0a6; --warn: #e3b341; --danger: #ff8a80;
+  --c-com: #7f9d8b; --c-kw: #c4a7ff; --c-str: #d6e58c; --c-num: #ffb86b; --c-fn: #8cc8ff;
+  --c-ty: #6fe0d2; --c-op: #b2c7ba; --c-meta: #f0abfc; --c-tag: #ff9aa8; --c-del: #ff8a80; --c-ins: #86efac;
   color-scheme: dark;
 }
 
@@ -100,6 +110,7 @@ img { max-width: 100%; }
   border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); cursor: pointer;
 }
 .theme-btn:hover { border-color: var(--muted); }
+.theme-btn[data-mode="green"] { color: var(--accent); }
 
 /* 4. 히어로와 암호 애니메이션 --------------------------------------------- */
 .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }

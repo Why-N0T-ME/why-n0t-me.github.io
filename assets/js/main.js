@@ -24,21 +24,34 @@
     }
   } catch (e) { /* 지원하지 않는 환경이면 무시 */ }
 
-  /* 2. 화면 모드 ------------------------------------------------------------ */
+  /* 2. 화면 모드: 라이트 → 다크 → 다크 그린 순으로 바뀝니다 ---------------- */
   var themeBtn = $('#theme-btn');
   var darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  var MODES = ['light', 'dark', 'green'];
+  var MODE_NAME = { light: '라이트', dark: '다크', green: '다크 그린' };
+  var META_COLOR = { light: '#fbfbfc', dark: '#0e1116', green: '#0c1713' };   // 주소창 색
+  var metas = $$('meta[name="theme-color"]');
+  metas.forEach(function (m) { m.setAttribute('data-orig', m.getAttribute('content') || ''); });
 
-  function isDark() {
+  function currentMode() {
     var t = root.getAttribute('data-theme');
-    if (t) return t === 'dark';
-    return !!(darkQuery && darkQuery.matches);
+    if (MODES.indexOf(t) !== -1) return t;
+    return darkQuery && darkQuery.matches ? 'dark' : 'light';
   }
   function syncTheme() {
-    if (themeBtn) themeBtn.setAttribute('aria-pressed', isDark() ? 'true' : 'false');
+    var forced = root.getAttribute('data-theme');
+    metas.forEach(function (m) {
+      m.setAttribute('content', MODES.indexOf(forced) !== -1 ? META_COLOR[forced] : m.getAttribute('data-orig'));
+    });
+    if (!themeBtn) return;
+    var cur = currentMode(), next = MODES[(MODES.indexOf(cur) + 1) % MODES.length];
+    themeBtn.setAttribute('data-mode', cur);
+    themeBtn.setAttribute('aria-label', '화면 모드 전환 (지금: ' + MODE_NAME[cur] + ')');
+    themeBtn.setAttribute('title', MODE_NAME[cur] + ' → ' + MODE_NAME[next]);
   }
   if (themeBtn) {
     themeBtn.addEventListener('click', function () {
-      var next = isDark() ? 'light' : 'dark';
+      var next = MODES[(MODES.indexOf(currentMode()) + 1) % MODES.length];
       root.setAttribute('data-theme', next);
       try { window.localStorage.setItem('theme', next); } catch (e) { /* 저장소를 못 쓰면 이번 방문에만 적용 */ }
       syncTheme();

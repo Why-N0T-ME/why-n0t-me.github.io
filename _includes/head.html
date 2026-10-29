@@ -16,11 +16,12 @@
 
 <script>
   /* 저장된 화면 모드를 페이지가 그려지기 전에 적용 (깜빡임 방지).
-     저장된 값이 없으면 기기의 라이트/다크 설정을 그대로 따릅니다. */
+     저장된 값이 없으면 기기의 라이트/다크 설정을 그대로 따릅니다.
+     저장되는 값: light · dark · green(다크 그린) */
   (function () {
     try {
       var t = localStorage.getItem('theme');
-      if (t === 'light' || t === 'dark') { document.documentElement.setAttribute('data-theme', t); }
+      if (t === 'light' || t === 'dark' || t === 'green') { document.documentElement.setAttribute('data-theme', t); }
     } catch (e) {}
   })();
 </script>
