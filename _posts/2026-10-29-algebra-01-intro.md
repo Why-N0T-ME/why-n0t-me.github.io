@@ -157,12 +157,6 @@ Draw $$ S $$ and $$ T $$ as two sets of dots, and $$ f $$ as arrows from $$ S $$
 ![Set diagrams of a bijective map f and its inverse g](/assets/img/posts/misc/AbstractAlgebra/note01/bijective.png)
 *Left: a bijective map f from S to T. Right: reversing all the arrows gives the inverse map g from T to S.*
 
-> To show that a map $$ f : S \to T $$ is `not surjective`, we have to show that $$ \exists\, y \in T $$ such that $$ f(x) \neq y $$ for all $$ x \in S $$. That is, there is some $$ y \in T $$ with $$ y \notin f(S) $$ (also written $$ y \notin \operatorname{Im}(f) $$).
-{: .prompt-tip }
-
-> To show that a map $$ f : S \to T $$ is `not injective`, we have to show that $$ \exists\, \alpha, \beta \in S $$ such that $$ \alpha \neq \beta $$ and $$ f(\alpha) = f(\beta) \in T $$.
-{: .prompt-tip }
-
 ### Exercises
 
 For maps between sets of real numbers, we can read injectivity and surjectivity off the graph. Draw the horizontal line $$ y = c $$ for each $$ c $$ in the codomain. Then $$ f $$ is injective if every such line meets the graph at most once, and surjective if every such line meets the graph at least once.
@@ -209,6 +203,12 @@ For 3, there are two ways to say it:
 
 - (recommended) Let's say $$ y = -1 \in \mathbb{R} $$. Since the range of $$ f(x) $$ is $$ [0, \infty) $$, there is no $$ x \in [0, \tfrac{\pi}{2}) $$ such that $$ f(x) = -1 $$. Therefore, $$ f $$ is not surjective.
 - Or, since the range of $$ f $$ is $$ f([0, \tfrac{\pi}{2})) = [0, \infty) $$, we have $$ f([0, \tfrac{\pi}{2})) \subsetneq \mathbb{R} $$ (so $$ \mathbb{R} \setminus f([0, \tfrac{\pi}{2})) \neq \emptyset $$). Hence $$ f $$ is not surjective.
+
+> To show that a map $$ f : S \to T $$ is `not surjective`, we have to show that $$ \exists\, y \in T $$ such that $$ f(x) \neq y $$ for all $$ x \in S $$. That is, there is some $$ y \in T $$ with $$ y \notin f(S) $$ (also written $$ y \notin \operatorname{Im}(f) $$).
+{: .prompt-tip }
+
+> To show that a map $$ f : S \to T $$ is `not injective`, we have to show that $$ \exists\, \alpha, \beta \in S $$ such that $$ \alpha \neq \beta $$ and $$ f(\alpha) = f(\beta) \in T $$.
+{: .prompt-tip }
 
 #### Exercise 5
 
