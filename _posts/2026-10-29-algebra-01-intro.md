@@ -60,7 +60,7 @@ A set is any collection of objects. For example, a set of animals = $$ \{\text{d
 - $$ \mathbb{Q} := \{ a/b \mid a, b \in \mathbb{Z},\ b \neq 0 \} $$, the rational numbers (유리수)
 - $$ \mathbb{R} $$, the real numbers (실수)
 - $$ \mathbb{C} := \{ a + bi \mid a, b \in \mathbb{R},\ i^2 = -1 \} $$, the complex numbers (복소수), where $$ i $$ is a square root of $$ -1 $$
-- $$ T^{+} $$, the positive elements of $$ T $$. For example, $$ \mathbb{R}^{+} = \{ x \in \mathbb{R} \mid x > 0 \} $$. Note that $$ 0 \notin T^{+} $$.
+- $$ T^{+} $$, the positive elements of a set $$ T $$ of numbers. For example, $$ \mathbb{R}^{+} = \{ x \in \mathbb{R} \mid x > 0 \} $$. Note that $$ 0 \notin T^{+} $$.
 
 ### Basic Logic and Set Notation
 
@@ -136,8 +136,8 @@ Examples of maps of sets:
 
 - $$ S $$ is `the domain` of $$ f $$, and $$ T $$ is `the codomain` of $$ f $$.
 - $$ f $$ is the `identity map` if $$ S = T $$ and $$ f(x) = x $$ for all $$ x \in S $$. We write $$ f = \mathrm{Id}_S $$, the identity map of $$ S $$.
-- $$ f $$ is `injective` if $$ f(x) = f(y) \Rightarrow x = y $$ for all $$ x, y \in S $$. Equivalently, $$ x \neq y \Rightarrow f(x) \neq f(y) $$. (단사함수, 일대일 함수; one-to-one function)
-- $$ f $$ is `surjective` if, given $$ y \in T $$, there exists $$ x \in S $$ such that $$ f(x) = y $$. In other words, the codomain $$ T $$ and the image $$ f(S) $$ are the same. (전사함수, 공역 = 치역, 위로의 함수; onto function)
+- $$ f $$ is `injective` if $$ f(x) = f(x') \Rightarrow x = x' $$ for all $$ x, x' \in S $$. Equivalently, $$ x \neq x' \Rightarrow f(x) \neq f(x') $$. (단사함수, 일대일 함수; one-to-one function)
+- $$ f $$ is `surjective` if, given $$ y \in T $$, there exists $$ x \in S $$ such that $$ f(x) = y $$. In other words, the codomain $$ T $$ and the image $$ f(S) := \{ f(x) \mid x \in S \} $$ are the same. (전사함수, 공역 = 치역, 위로의 함수; onto function)
 - If $$ f $$ is both injective and surjective, then $$ f $$ is `bijective`. (전단사함수)
 
 ### Maps as pictures
@@ -201,7 +201,7 @@ For 1, the reason it is not well-defined: the domain $$ [0, \tfrac{\pi}{2}] $$ c
 
 For 3, there are two ways to say it:
 
-- (recommended) Let's say $$ y = -1 \in \mathbb{R} $$. Since the range of $$ f(x) $$ is $$ [0, \infty) $$, there is no $$ x \in [0, \tfrac{\pi}{2}) $$ such that $$ f(x) = -1 $$. Therefore, $$ f $$ is not surjective.
+- (recommended) Let's say $$ y = -1 \in \mathbb{R} $$. Since the range (image) of $$ f $$ is $$ [0, \infty) $$, there is no $$ x \in [0, \tfrac{\pi}{2}) $$ such that $$ f(x) = -1 $$. Therefore, $$ f $$ is not surjective.
 - Or, since the range of $$ f $$ is $$ f([0, \tfrac{\pi}{2})) = [0, \infty) $$, we have $$ f([0, \tfrac{\pi}{2})) \subsetneq \mathbb{R} $$ (so $$ \mathbb{R} \setminus f([0, \tfrac{\pi}{2})) \neq \emptyset $$). Hence $$ f $$ is not surjective.
 
 > To show that a map $$ f : S \to T $$ is `not surjective`, we have to show that $$ \exists\, y \in T $$ such that $$ f(x) \neq y $$ for all $$ x \in S $$. That is, there is some $$ y \in T $$ with $$ y \notin f(S) $$ (also written $$ y \notin \operatorname{Im}(f) $$).
@@ -221,7 +221,7 @@ $$ f : \mathbb{R} \to \mathbb{R},\ f(x) = 2x + 1 $$.
 - Surjective: say $$ y \in \mathbb{R} $$. If $$ 2x + 1 = y $$, then $$ 2x = y - 1 $$ and $$ x = \tfrac{y - 1}{2} $$. Indeed, $$ f\left(\tfrac{y-1}{2}\right) = 2 \cdot \tfrac{y-1}{2} + 1 = y \in \mathbb{R} $$.
 - So the map $$ f $$ is bijective.
 
-### Exercise: bijection and the inverse map
+### Bijection and the inverse map
 
 **Exercise.** Let $$ S $$ and $$ T $$ be two sets, and let $$ f $$ be a map from $$ S $$ to $$ T $$. Show that $$ f $$ is a bijection if and only if there exists a map $$ g : T \to S $$ such that
 
@@ -229,11 +229,11 @@ $$
 f \circ g = \mathrm{Id}_T \quad \text{and} \quad g \circ f = \mathrm{Id}_S.
 $$
 
-**Proof.** First, we are going to show that $$ f $$ bijective $$ \Rightarrow $$ such a $$ g $$ exists. And then, we show the opposite way.
+**Proof.** First, we are going to show that if $$ f $$ is a bijection, then such a $$ g $$ exists. And then, we show the opposite direction.
 
 ($$ \Rightarrow $$) If $$ f $$ is a bijection, then
 
-- (injective) $$ f(x) = f(y) \Rightarrow x = y $$, and
+- (injective) $$ f(x) = f(x') \Rightarrow x = x' $$ for all $$ x, x' \in S $$, and
 - (surjective) $$ \forall y \in T,\ \exists x \in S $$ such that $$ f(x) = y $$.
 
 Define $$ g : T \to S $$ as follows. For $$ y \in T $$, surjectivity gives some $$ x \in S $$ with $$ f(x) = y $$, and by injectivity this $$ x $$ is unique (if $$ f(x) = f(x') = y $$, then $$ x = x' $$). Let $$ g(y) := x $$. Then $$ g $$ is a map from $$ T $$ to $$ S $$, and $$ f(g(y)) = y $$ for all $$ y \in T $$.
@@ -244,11 +244,11 @@ $$
 f \circ g : T \to S \to T,\ \text{that is, } f \circ g : T \to T.
 $$
 
-Therefore $$ f \circ g = \mathrm{Id}_T $$. In the same way, for $$ x \in S $$, $$ g(f(x)) $$ is the unique $$ x' \in S $$ with $$ f(x') = f(x) $$, and $$ x' = x $$ by injectivity. So $$ g \circ f = \mathrm{Id}_S $$.
+Since $$ f(g(y)) = y $$ for all $$ y \in T $$, we get $$ f \circ g = \mathrm{Id}_T $$. In the same way, for $$ x \in S $$, $$ g(f(x)) $$ is the unique $$ x' \in S $$ with $$ f(x') = f(x) $$, and $$ x' = x $$ by injectivity. So $$ g \circ f = \mathrm{Id}_S $$.
 
 ($$ \Leftarrow $$) Suppose $$ f : S \to T $$ and $$ g : T \to S $$ satisfy $$ f \circ g = \mathrm{Id}_T $$ and $$ g \circ f = \mathrm{Id}_S $$.
 
-- (injective) If $$ f(x) = f(y) $$, then $$ g(f(x)) = g(f(y)) $$. Since $$ g \circ f = \mathrm{Id}_S $$, this says $$ x = y $$.
+- (injective) If $$ f(x) = f(x') $$ for $$ x, x' \in S $$, then $$ g(f(x)) = g(f(x')) $$. Since $$ g \circ f = \mathrm{Id}_S $$, this says $$ x = x' $$.
 - (surjective) Let $$ y \in T $$ and put $$ x := g(y) \in S $$. Then $$ f(x) = f(g(y)) = y $$, because $$ f \circ g = \mathrm{Id}_T $$.
 
 Hence $$ f $$ is a bijection. ∎
