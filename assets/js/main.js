@@ -53,10 +53,10 @@
     try { window.HeroArt.init(hero); } catch (e) { /* 애니메이션이 없어도 페이지는 정상 */ }
   }
 
-  /* 3-2. About 의 수학 롤러코스터 ------------------------------------------- */
-  var coaster = $('[data-coaster]');
-  if (coaster && window.AboutArt) {
-    try { window.AboutArt.init(coaster); } catch (e) { coaster.hidden = true; /* 실패하면 이 구역만 숨긴다 */ }
+  /* 3-2. About 상단의 배경 애니메이션 ---------------------------------------- */
+  var aboutHero = $('[data-about-hero]');
+  if (aboutHero && window.AboutArt) {
+    try { window.AboutArt.init(aboutHero); } catch (e) { /* 그림이 없어도 소개 글은 정상 */ }
   }
 
   /* 4. 글: 목차와 현재 위치 ------------------------------------------------- */

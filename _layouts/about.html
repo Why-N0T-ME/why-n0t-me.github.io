@@ -3,55 +3,42 @@ layout: default
 ---
 {%- assign body = content | strip -%}
 {%- assign n = 0 -%}
-<div class="wrap page-main">
-  <header class="pagehead">
-    <div class="eyebrow"><i></i>About</div>
-  </header>
+{%- comment -%}
+  상단은 홈과 같은 방식의 배경 애니메이션 위에 올립니다. (assets/js/about-art.js)
+  라쿤이 던진 공이 함수 롤러코스터를 타고 내려가며 수학의 밑바닥(∅)까지 가고, 거기서 새싹이 돋습니다.
+{%- endcomment -%}
+<section class="about-hero" data-about-hero>
+  <div class="about-art" data-about-art aria-hidden="true"></div>
+  <div class="wrap about-hero-inner">
+    <header class="pagehead">
+      <div class="eyebrow"><i></i>About</div>
+    </header>
 
-  <section class="about-top">
-    <img class="avatar" src="{{ site.avatar | relative_url }}" alt="{{ page.display_name | default: site.social.name }} 프로필 사진" width="168" height="168" decoding="async">
-    <div class="about-copy">
-      <h1 class="about-name">{{ page.display_name | default: site.social.name }}</h1>
-      {%- if page.headline -%}<div class="headline">{{ page.headline }}</div>{%- endif -%}
-      {%- if page.intro -%}<p class="intro">{{ page.intro }}</p>{%- endif -%}
-      {%- if page.links -%}
-      <div class="btns">
-        {%- for l in page.links -%}
-        <a class="btn{% if forloop.first %} primary{% endif %}" href="{{ l.url }}"{% unless l.url contains 'mailto:' %} rel="noopener"{% endunless %}>{{ l.label }}</a>
-        {%- endfor -%}
-      </div>
-      {%- endif -%}
-    </div>
-  </section>
-
-  {%- comment -%}
-    수학 롤러코스터. 내용(층의 이름·설명)은 assets/js/about-art.js 의 LAYERS 에서 고칩니다.
-    스크립트가 켜진 브라우저에서만 보입니다. (hidden 은 스크립트가 풀어 줍니다)
-  {%- endcomment -%}
-  <section class="block coaster" aria-labelledby="ab-coaster" data-coaster hidden>
-    <div class="co-head">
-      <h2 id="ab-coaster"><span class="no">↓</span>수학 롤러코스터</h2>
-      <a class="co-skip" href="#co-end">건너뛰기 ↓</a>
-    </div>
-    <p class="co-lead">스크롤하면 라쿤이 공을 던집니다. 공은 함수 트랙을 타고 내려가며, 갈수록 더 단순하고 근본적인 수학을 지나 맨 밑의 ∅에 닿습니다.</p>
-    <ol class="sr-only" data-co-list aria-label="지나가는 수학의 층"></ol>
-    <div class="co-track" data-co-track>
-      <div class="co-stage" data-co-stage>
-        <div class="co-svg" data-co-svg></div>
-        <div class="co-hint" data-co-hint aria-hidden="true">스크롤 ↓</div>
-        <ol class="co-dots" data-co-dots aria-label="층으로 이동"></ol>
-        <div class="co-card" data-co-card>
-          <div class="co-no" data-co-no>01 / 09</div>
-          <div class="co-name" data-co-name>해석학</div>
-          <div class="co-sub" data-co-sub></div>
-          <div class="co-op" data-co-op></div>
-          <div class="co-endmsg">아무것도 없는 곳(∅)에서 새싹이 핍니다. 위로 올라갈수록 복잡해지는 수학도 여기서 시작합니다.</div>
+    <section class="about-top">
+      <img class="avatar" src="{{ site.avatar | relative_url }}" alt="{{ page.display_name | default: site.social.name }} 프로필 사진" width="168" height="168" decoding="async">
+      <div class="about-copy">
+        <h1 class="about-name">{{ page.display_name | default: site.social.name }}</h1>
+        {%- if page.headline -%}<div class="headline">{{ page.headline }}</div>{%- endif -%}
+        {%- if page.intro -%}<p class="intro">{{ page.intro }}</p>{%- endif -%}
+        {%- if page.links -%}
+        <div class="btns">
+          {%- for l in page.links -%}
+          <a class="btn{% if forloop.first %} primary{% endif %}" href="{{ l.url }}"{% unless l.url contains 'mailto:' %} rel="noopener"{% endunless %}>{{ l.label }}</a>
+          {%- endfor -%}
         </div>
+        {%- endif -%}
       </div>
+    </section>
+  </div>
+  <div class="art-bar">
+    <div class="wrap">
+      <button class="art-btn tog" type="button" data-about-toggle aria-label="배경 애니메이션 일시정지" aria-pressed="false" data-state="playing"></button>
+      <span class="art-cap" data-about-caption aria-hidden="true"></span>
     </div>
-    <span id="co-end"></span>
-  </section>
+  </div>
+</section>
 
+<div class="wrap page-main about-body">
   {%- if page.interests -%}
   {%- assign n = n | plus: 1 -%}
   <section class="block" aria-labelledby="ab-interest">

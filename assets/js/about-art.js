@@ -1,12 +1,10 @@
 /* about-art.js
-   About 페이지의 "수학 롤러코스터".
-   라쿤이 던진 공이 함수 트랙을 타고 내려갑니다. 내려갈수록 배경은 더 단순하고 근본적인 수학으로 바뀌고,
-   공이 맨 밑의 ∅(공집합)에 닿으면 그 자리에서 새싹이 자랍니다.
-   - SVG 로 그리고, 스크롤 위치(0~1)가 곧 장면의 진행도입니다. 시간이 아니라 스크롤에 묶여 있어서
-     올리면 거꾸로 올라갑니다. 외부 라이브러리 없음.
-   - 공은 "곡선 위의 구슬"처럼 움직입니다. 내리막에서 빠르고 오르막에서 느립니다.
-   - prefers-reduced-motion 이면 움직임 없이, 전체를 한 장으로 펼친 그림만 보여 줍니다.
-   - 층의 이름·설명·연산은 아래 LAYERS 에서 고칩니다. */
+   About 페이지 배경 애니메이션: 라쿤이 던진 공이 "함수 롤러코스터"를 타고 내려갑니다.
+   내려갈수록 배경은 더 단순하고 근본적인 수학으로 바뀌고, 공이 맨 밑의 ∅(공집합)에 닿으면 새싹이 돋습니다.
+   - 홈의 hero-art.js 와 같은 방식: SVG + requestAnimationFrame, 외부 라이브러리 없음.
+   - 한 바퀴(약 45초)가 끝나면 처음부터 다시 돕니다. 화면 밖이면 멈추고, 일시정지 버튼이 있습니다.
+   - prefers-reduced-motion 이면 움직이지 않고 정지 화면 한 장만 보여 줍니다.
+   - 그림 안의 글자는 모두 영어(수식)입니다. 층의 이름·설명은 아래 LAYERS 에서 고칩니다. */
 (function () {
   'use strict';
 
@@ -17,30 +15,34 @@
      1. 층 (위가 가장 고급, 아래로 갈수록 단순하고 근본적)
      ====================================================================== */
   var LAYERS = [
-    { name: '해석학',        sub: '극한 · 연속 · 적분 · 급수',        op: 'lim   ∫   Σ' },
-    { name: '현대대수학',    sub: '군 · 환 · 체',                    op: 'a ∘ b' },
-    { name: '선형대수',      sub: '행렬 · 벡터 · 선형사상',          op: 'A · B' },
-    { name: '미적분',        sub: '극한 · 미분 · 적분',              op: 'd/dx   ∫' },
-    { name: '방정식과 함수', sub: '다항식 · 방정식 · 그래프',        op: 'f(x) = 0' },
-    { name: '정수와 나머지', sub: '약수 · 소수 · 합동',              op: 'mod   gcd' },
-    { name: '사칙연산',      sub: '더하기 · 빼기 · 곱하기 · 나누기', op: '+   −   ×   ÷' },
-    { name: '수 세기',       sub: '하나, 둘, 셋 … 그리고 0',         op: 'n → n + 1' },
-    { name: '집합과 논리',   sub: '원소 · 집합 · 참과 거짓',         op: '∈   ∪   ∩   ¬' }
+    { name: 'Analysis',              sub: 'limits, continuity, integrals, series' },
+    { name: 'Abstract Algebra',      sub: 'groups, rings, fields' },
+    { name: 'Linear Algebra',        sub: 'matrices, vectors, linear maps' },
+    { name: 'Calculus',              sub: 'limits, derivatives, integrals' },
+    { name: 'Equations & Functions', sub: 'polynomials, equations, graphs' },
+    { name: 'Integers & Remainders', sub: 'divisors, primes, congruence' },
+    { name: 'Arithmetic',            sub: 'add, subtract, multiply, divide' },
+    { name: 'Counting',              sub: 'one, two, three ... and zero' },
+    { name: 'Sets & Logic',          sub: 'elements, sets, true and false' }
   ];
   var N = LAYERS.length;
 
   /* ======================================================================
-     2. 월드 좌표 (가로 1000 고정, 세로로 길게)
+     2. 월드 좌표 (가로 1000 안팎, 세로로 길게)와 한 바퀴의 시간표
      ====================================================================== */
   var X0 = 370, X1 = 740, MID = (X0 + X1) / 2;   // 트랙이 오가는 가로 범위
   var Y0 = 410;                                   // 첫 층 트랙이 시작하는 높이
   var LH = 560;                                   // 층 하나의 높이
   var DROP = 350;                                 // 층 하나에서 트랙이 내려가는 높이
   var RX = 255, LEDGE = 235;                      // 라쿤이 앉은 자리(가로, 발판 높이)
-  var PT = 0.085;                                 // 스크롤 0~PT: 공 던지기
-  var PE = 0.93;                                  // PT~PE: 트랙 타기, PE~1: 새싹
   var DS = 3;                                     // 트랙을 점으로 나눈 간격
-  var STICKY_TOP = 16;                            // CSS 의 .co-stage top 과 같아야 함
+  var BOX_L = 170, BOX_R = 905;                   // 화면에 꼭 보여야 하는 가로 범위(라쿤 ~ 트랙)
+
+  var T_THROW = 2.8, T_PIECE = 4.0, T_SPROUT = 3.2, T_HOLD = 2.6, T_FADE = 0.9;
+  var D = T_THROW + N * T_PIECE + T_SPROUT;       // 던지기 + 트랙 타기 + 새싹
+  var LOOP = D + T_HOLD;                          // 한 바퀴
+  var PT = T_THROW / D;                           // 진행도 0~PT: 던지기
+  var PE = (T_THROW + N * T_PIECE) / D;           // PT~PE: 트랙 타기, PE~1: 새싹
 
   /* ---------- 작은 도구들 (hero-art.js 와 같은 방식) ---------- */
   function S(tag, attrs, parent) {
@@ -91,6 +93,11 @@
   }
   function ln(parent, x1, y1, x2, y2, cls) { return S('line', { x1: x1, y1: y1, x2: x2, y2: y2, 'class': cls || 'co-ln' }, parent); }
   function dot(parent, x, y, r, cls) { return S('circle', { cx: f1(x), cy: f1(y), r: r, 'class': cls || 'co-pt' }, parent); }
+  function pathOf(pts, close) {
+    var d = '', i;
+    for (i = 0; i < pts.length; i++) d += (i ? 'L' : 'M') + f1(pts[i][0]) + ' ' + f1(pts[i][1]);
+    return d + (close ? 'Z' : '');
+  }
   function arrow(parent, x1, y1, x2, y2, cls) {
     var dx = x2 - x1, dy = y2 - y1, l = Math.sqrt(dx * dx + dy * dy) || 1, ux = dx / l, uy = dy / l, s = 7;
     ln(parent, x1, y1, x2 - ux * s * 0.6, y2 - uy * s * 0.6, cls || 'co-ln co-hl');
@@ -106,28 +113,28 @@
         홀수 번째 층은 오른쪽→왼쪽으로 갑니다. 층 사이는 부드러운 U턴.
      ====================================================================== */
   var SHAPES = [
-    /* 0 해석학: 푸리에 급수의 부분합 Σ (−1)^(n+1) sin(nθ)/n, n ≤ 4 */
+    /* 0 Analysis: 푸리에 급수의 부분합 Σ (−1)^(n+1) sin(nθ)/n, n ≤ 4 */
     function (u) {
       var th = 2 * PI * 2 * u, s = 0, n;
       for (n = 1; n <= 4; n++) s += (n % 2 ? 1 : -1) * Math.sin(n * th) / n;
       return DROP * u + 30 * s;
     },
-    /* 1 현대대수학: 사인파 (원분체·단위근의 모양) */
+    /* 1 Abstract Algebra: 사인파 (원분체·단위근의 모양) */
     function (u) { return DROP * u + 34 * Math.sin(2 * PI * 2 * u); },
-    /* 2 선형대수: 직선 조각을 이은 톱니 (구간별 선형) */
+    /* 2 Linear Algebra: 직선 조각을 이은 톱니 (구간별 선형) */
     function (u) {
       var q = u * 4, f = q - Math.floor(q), tri = f < 0.5 ? f * 2 : 2 - 2 * f;
       return DROP * u + 46 * tri;
     },
-    /* 3 미적분: 3차 다항식 */
+    /* 3 Calculus: 3차 다항식 */
     function (u) { return DROP * (u + 2.4 * u * (1 - u) * (1 - 2 * u)); },
-    /* 4 방정식과 함수: 포물선 y = x² */
+    /* 4 Equations & Functions: 포물선 y = x² */
     function (u) { return DROP * u * u; },
-    /* 5 정수와 나머지: 나머지(mod)의 톱니 — 완만한 오르막 뒤에 수직 낙하 */
+    /* 5 Integers & Remainders: 나머지(mod)의 톱니 — 완만한 오르막 뒤에 수직 낙하 */
     function (u) { var q = 3 * u; return DROP * u - 70 * (q - Math.floor(q)); },
-    /* 6 사칙연산: 직선 y = x + c */
+    /* 6 Arithmetic: 직선 y = x + c */
     function (u) { return DROP * u; }
-    /* 7 수 세기는 계단, 8 집합과 논리는 깔때기: 아래에서 따로 만듭니다 */
+    /* 7 Counting 은 계단, 8 Sets & Logic 은 깔때기: 아래에서 따로 만듭니다 */
   ];
 
   /* 점 사이가 step 이하가 되도록 사이에 점을 채웁니다 */
@@ -267,6 +274,7 @@
      4. 배경: 층마다 그 층의 수학 (글자와 작은 그림)
      ====================================================================== */
   var GRID = [25, 25, 30, 35, 40, 50, 60, 100, 0];     // 아래로 갈수록 눈금이 성기고, 마지막은 빈 종이
+  var GX0 = -700, GX1 = 1100;                          // 눈금을 그리는 가로 범위
 
   function figEpsDelta(g, cx, cy) {
     var fn = function (t) { return -0.55 * t + 9 * Math.sin(t / 16); }, d = '', t;
@@ -282,15 +290,15 @@
     txt(g, 'δ', cx + 44, cy + 62, 16);
   }
   function figRoots(g, cx, cy, r, n) {
-    var k, a, d = '', px, py;
+    var k, a, pts = [], px, py;
     S('circle', { cx: cx, cy: cy, r: r, 'class': 'co-ln' }, g);
     for (k = 0; k < n; k++) {
       a = (-90 + 360 * k / n) * PI / 180;
       px = cx + Math.cos(a) * r; py = cy + Math.sin(a) * r;
-      d += (k ? 'L' : 'M') + f1(px) + ' ' + f1(py);
+      pts.push([px, py]);
       dot(g, px, py, 3.2);
     }
-    S('path', { d: d + 'Z', 'class': 'co-ln co-dash' }, g);
+    S('path', { d: pathOf(pts, true), 'class': 'co-ln co-dash' }, g);
     dot(g, cx, cy, 2);
     a = (-90 + 360 / n) * PI / 180;
     arrow(g, cx, cy, cx + Math.cos(a) * (r - 4), cy + Math.sin(a) * (r - 4));
@@ -345,7 +353,7 @@
   function figCount(g, cx, cy) {
     var r, c;
     for (r = 1; r <= 3; r++) for (c = 0; c < r; c++) dot(g, cx - (r - 1) * 10 + c * 20, cy - 24 + (r - 1) * 26, 6);
-    txt(g, '하나 · 둘 · 셋', cx, cy + 62, 16, 'co-f co-k');
+    txt(g, 'one · two · three', cx, cy + 62, 15);
   }
   function figVenn(g, cx, cy) {
     S('circle', { cx: cx - 20, cy: cy, r: 36, 'class': 'co-ln co-soft' }, g);
@@ -363,15 +371,15 @@
     /* 눈금 */
     if (gs) {
       d = '';
-      for (x = 0; x <= 1000; x += gs) d += 'M' + x + ' ' + top + 'V' + bot;
-      for (y = Math.ceil(top / gs) * gs; y < bot; y += gs) d += 'M0 ' + y + 'H1000';
+      for (x = Math.ceil(GX0 / gs) * gs; x <= GX1; x += gs) d += 'M' + x + ' ' + top + 'V' + bot;
+      for (y = Math.ceil(top / gs) * gs; y < bot; y += gs) d += 'M' + GX0 + ' ' + y + 'H' + GX1;
       S('path', { d: d, 'class': 'co-grid' }, g);
     }
     /* 층 경계선과 이름 */
-    if (i > 0) ln(g, 0, top, 1000, top, 'co-sep');
+    if (i > 0) ln(g, GX0, top, GX1, top, 'co-sep');
     var hx = odd ? 188 : 892, ha = odd ? 'start' : 'end', hy = i === 0 ? 70 : top + 40;
     txt(g, pad2(i + 1), hx, hy, 13, 'co-no', ha);
-    txt(g, LAYERS[i].name, hx, hy + 28, 24, 'co-name', ha);
+    txt(g, LAYERS[i].name, hx, hy + 24, 19, 'co-name', ha);
 
     if (i === 0) {
       figEpsDelta(g, X(275), T + 130);
@@ -434,65 +442,71 @@
   }
 
   /* ======================================================================
-     5. 라쿤 (원본 사진과 닮은 작은 벡터 그림) · ∅ 와 새싹
+     5. 라쿤 (점과 선으로만 그린 그래프) · ∅ 와 새싹
+        꼭짓점은 점, 변은 선. 눈 가면과 꼬리의 줄무늬만 살렸습니다.
      ====================================================================== */
+  var SHOULDER = [17, -48], ARM_LEN = 26, BALL_DIST = 35;
+
+  function cubicPts(p0, p1, p2, p3, n) { return bez(p0, p1, p2, p3, n); }
+
   function buildRaccoon(parent) {
-    var g = S('g', { 'class': 'co-rc' }, parent), arm, pl, pr, tail;
-    /* 꼬리: 두꺼운 선 위에 어두운 줄무늬(점선)를 얹어 고리무늬로 */
-    var td = 'M-10 -8C-40 -4 -56 -24 -48 -50C-43 -64 -32 -68 -27 -60';
-    S('path', { d: td, 'class': 'rc-tail-line' }, g);
-    S('path', { d: td, 'class': 'rc-tail' }, g);
-    S('path', { d: td, 'class': 'rc-rings' }, g);
-    S('circle', { cx: -27, cy: -60, r: 10, 'class': 'rc-dark' }, g);
-    /* 귀 */
-    S('circle', { cx: -21, cy: -95, r: 9.5, 'class': 'rc-fur' }, g);
-    S('circle', { cx: 21, cy: -95, r: 9.5, 'class': 'rc-fur' }, g);
-    S('circle', { cx: -21, cy: -94, r: 5, 'class': 'rc-dark' }, g);
-    S('circle', { cx: 21, cy: -94, r: 5, 'class': 'rc-dark' }, g);
-    /* 몸 */
-    S('path', { d: 'M-26 -6C-34 -30 -26 -62 0 -62C26 -62 34 -30 26 -6C14 0 -14 0 -26 -6Z', 'class': 'rc-fur rc-edge' }, g);
-    S('ellipse', { cx: 0, cy: -28, rx: 14, ry: 22, 'class': 'rc-belly' }, g);
-    S('ellipse', { cx: -13, cy: -2, rx: 11, ry: 5.5, 'class': 'rc-dark' }, g);
-    S('ellipse', { cx: 13, cy: -2, rx: 11, ry: 5.5, 'class': 'rc-dark' }, g);
+    var g = S('g', { 'class': 'mr' }, parent), i, a, pl, pr, arm;
+    /* 꼬리: 옅은 띠 + 중심선 + 고리 줄무늬 */
+    var tail = cubicPts([-18, -6], [-46, -2], [-62, -22], [-54, -48], 28).concat(cubicPts([-54, -48], [-50, -60], [-40, -64], [-34, -58], 14).slice(1));
+    var cum = [0], tot, f, idx, p, q, nx, ny, nl;
+    for (i = 1; i < tail.length; i++) cum.push(cum[i - 1] + Math.sqrt(Math.pow(tail[i][0] - tail[i - 1][0], 2) + Math.pow(tail[i][1] - tail[i - 1][1], 2)));
+    tot = cum[cum.length - 1];
+    S('path', { d: pathOf(tail), 'class': 'mr-band' }, g);
+    S('path', { d: pathOf(tail), 'class': 'mr-ln' }, g);
+    for (f = 0.16; f < 0.95; f += 0.15) {
+      idx = 1; while (idx < cum.length - 1 && cum[idx] < tot * f) idx++;
+      p = tail[idx - 1]; q = tail[Math.min(tail.length - 1, idx + 1)];
+      nx = -(q[1] - p[1]); ny = q[0] - p[0]; nl = Math.sqrt(nx * nx + ny * ny) || 1; nx = nx / nl * 7; ny = ny / nl * 7;
+      ln(g, tail[idx][0] - nx, tail[idx][1] - ny, tail[idx][0] + nx, tail[idx][1] + ny, 'mr-ring');
+    }
+    dot(g, tail[tail.length - 1][0], tail[tail.length - 1][1], 3.4, 'mr-dot');
+
+    /* 몸: 열린 다각형 */
+    var body = [[-17, -53], [-25, -30], [-21, -3], [21, -3], [25, -30], [17, -53]];
+    S('path', { d: pathOf(body), 'class': 'mr-ln' }, g);
+    for (i = 0; i < body.length; i++) dot(g, body[i][0], body[i][1], 1.8, 'mr-dot');
+    dot(g, 0, -42, 1.6, 'mr-dot mr-faint'); dot(g, 0, -32, 1.6, 'mr-dot mr-faint'); dot(g, 0, -22, 1.6, 'mr-dot mr-faint');
+    dot(g, -12, -2, 3.4, 'mr-dot'); dot(g, 12, -2, 3.4, 'mr-dot');
     /* 가만히 있는 왼팔 */
-    S('path', { d: 'M-21 -52C-27 -44 -24 -34 -19 -29', 'class': 'rc-limb' }, g);
-    S('circle', { cx: -18, cy: -28, r: 5, 'class': 'rc-dark' }, g);
-    /* 머리 */
-    S('ellipse', { cx: 0, cy: -76, rx: 29, ry: 22, 'class': 'rc-fur rc-edge' }, g);
-    S('ellipse', { cx: -20, cy: -69, rx: 10, ry: 8, 'class': 'rc-belly' }, g);
-    S('ellipse', { cx: 20, cy: -69, rx: 10, ry: 8, 'class': 'rc-belly' }, g);
-    S('ellipse', { cx: -13, cy: -91, rx: 7, ry: 3, 'class': 'rc-belly' }, g);
-    S('ellipse', { cx: 13, cy: -91, rx: 7, ry: 3, 'class': 'rc-belly' }, g);
-    S('ellipse', { cx: 0, cy: -67, rx: 11, ry: 8, 'class': 'rc-belly' }, g);
-    /* 눈 가면 */
-    S('path', { d: 'M-28 -82C-20 -90 -6 -86 0 -80C6 -86 20 -90 28 -82C31 -72 22 -66 12 -68C6 -69 3 -73 0 -73C-3 -73 -6 -69 -12 -68C-22 -66 -31 -72 -28 -82Z', 'class': 'rc-dark' }, g);
-    S('ellipse', { cx: -12, cy: -77, rx: 4.6, ry: 3.8, 'class': 'rc-eye' }, g);
-    S('ellipse', { cx: 12, cy: -77, rx: 4.6, ry: 3.8, 'class': 'rc-eye' }, g);
-    pl = S('circle', { cx: -12, cy: -77, r: 2.3, 'class': 'rc-dark' }, g);
-    pr = S('circle', { cx: 12, cy: -77, r: 2.3, 'class': 'rc-dark' }, g);
-    S('ellipse', { cx: 0, cy: -73, rx: 4.6, ry: 3.2, 'class': 'rc-dark' }, g);
-    S('path', { d: 'M-4 -64Q0 -61 4 -64', 'class': 'rc-mouth' }, g);
+    ln(g, -17, -48, -22, -28, 'mr-ln'); dot(g, -22, -27, 3, 'mr-dot');
+
+    /* 머리: 귀가 뾰족한 다각형 */
+    var head = [[-24, -97], [-12, -85], [0, -83], [12, -85], [24, -97], [31, -73], [21, -58], [0, -53], [-21, -58], [-31, -73]];
+    S('path', { d: pathOf(head, true), 'class': 'mr-ln mr-fill' }, g);
+    for (i = 0; i < head.length; i++) dot(g, head[i][0], head[i][1], 1.8, 'mr-dot');
+    /* 눈 가면(띠) · 눈 · 코 */
+    S('path', { d: pathOf([[-28, -79], [-14, -85], [0, -80], [14, -85], [28, -79], [27, -70], [14, -67], [0, -72], [-14, -67], [-27, -70]], true), 'class': 'mr-mask' }, g);
+    S('circle', { cx: -13, cy: -76, r: 3.6, 'class': 'mr-eye' }, g);
+    S('circle', { cx: 13, cy: -76, r: 3.6, 'class': 'mr-eye' }, g);
+    pl = dot(g, -13, -76, 1.7, 'mr-dot'); pr = dot(g, 13, -76, 1.7, 'mr-dot');
+    dot(g, 0, -63, 3, 'mr-dot');
+
     /* 공을 던지는 오른팔: 어깨를 축으로 회전 */
-    arm = S('g', { transform: 'translate(22 -52)' }, g);
-    S('path', { d: 'M0 0L0 26', 'class': 'rc-limb' }, arm);
-    S('circle', { cx: 0, cy: 28, r: 5.5, 'class': 'rc-dark' }, arm);
+    arm = S('g', { transform: 'translate(' + SHOULDER[0] + ' ' + SHOULDER[1] + ')' }, g);
+    ln(arm, 0, 0, 0, ARM_LEN, 'mr-ln');
+    dot(arm, 0, ARM_LEN, 3.2, 'mr-dot');
+    dot(g, SHOULDER[0], SHOULDER[1], 1.8, 'mr-dot');
     return { g: g, arm: arm, pl: pl, pr: pr };
   }
 
   function buildSprout(parent) {
     var g = S('g', { 'class': 'co-sprout' }, parent);
-    var stem = S('path', { d: 'M0 0C-3 -22 6 -42 2 -66', 'class': 'sp-stem', pathLength: 100 }, g);
-    var leafD = 'M0 0C8 -13 26 -17 40 -7C28 6 10 9 0 0Z';
+    var stem = S('path', { d: 'M0 0C-1 -7 2 -13 1 -20', 'class': 'sp-stem', pathLength: 100 }, g);
+    var leafD = 'M0 0C4 -7 12 -9 19 -3C12 3 4 4 0 0Z';
     var lf = S('path', { d: leafD, 'class': 'sp-leaf' }, g);
     var rt = S('path', { d: leafD, 'class': 'sp-leaf' }, g);
-    var bud = S('circle', { cx: 2, cy: -66, r: 3.4, 'class': 'sp-leaf' }, g);
-    return { g: g, stem: stem, l: lf, r: rt, bud: bud };
+    return { g: g, stem: stem, l: lf, r: rt };
   }
 
   /* ======================================================================
      6. 던지기: 팔을 뒤로 젖혔다가 휘두르고, 공은 포물선으로 트랙에 내려앉는다
      ====================================================================== */
-  var ARM = { hold: -150, back: -232, rel: -108, fol: -35 };   // 도 단위. 0 = 팔이 아래를 향함
+  var ARM = { hold: -125, back: -232, rel: -108, fol: -35 };   // 도 단위. 0 = 팔이 아래를 향함
   var REL_AT = 0.52;                                            // 이 진행도에서 손을 떠난다
   function armAt(tau) {
     if (tau < 0.28) return lerp(ARM.hold, ARM.back, ease(tau / 0.28));
@@ -501,34 +515,28 @@
   }
   function pawPos(aDeg, k, dist) {
     var a = aDeg * PI / 180;
-    return [RX + k * (22 - Math.sin(a) * dist), LEDGE + k * (-52 + Math.cos(a) * dist)];
+    return [RX + k * (SHOULDER[0] - Math.sin(a) * dist), LEDGE + k * (SHOULDER[1] + Math.cos(a) * dist)];
   }
 
   /* ======================================================================
-     7. 화면에 붙이기
+     7. 화면에 붙이기 (홈의 hero-art.js 와 같은 틀)
      ====================================================================== */
   function init(root) {
-    var track = root.querySelector('[data-co-track]');
-    var stage = root.querySelector('[data-co-stage]');
-    var holder = root.querySelector('[data-co-svg]');
-    var card = root.querySelector('[data-co-card]');
-    var elNo = root.querySelector('[data-co-no]');
-    var elName = root.querySelector('[data-co-name]');
-    var elSub = root.querySelector('[data-co-sub]');
-    var elOp = root.querySelector('[data-co-op]');
-    var dotsBox = root.querySelector('[data-co-dots]');
-    var hint = root.querySelector('[data-co-hint]');
-    var list = root.querySelector('[data-co-list]');
-    if (!track || !stage || !holder) return null;
+    var host = root.querySelector('[data-about-art]');
+    var toggle = root.querySelector('[data-about-toggle]');
+    var caption = root.querySelector('[data-about-caption]');
+    if (!host) return null;
 
     var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var compactQ = window.matchMedia ? window.matchMedia('(max-width: 900px)') : null;
     var T = buildTrack();
     var H = T.C[1] + 380;
     var M = T.M;
 
     /* --- SVG --- */
-    var svg = S('svg', { 'class': 'co-world', 'aria-hidden': 'true', focusable: 'false' }, holder);
-    var world = S('g', {}, svg);
+    var svg = S('svg', { 'class': 'aa-world', 'aria-hidden': 'true', focusable: 'false' }, host);
+    var fade = S('g', {}, svg);
+    var world = S('g', {}, fade);
 
     var bands = [], i, gl, top, bot;
     for (i = 0; i < N; i++) {
@@ -545,101 +553,73 @@
     var trav = S('path', { d: T.d, 'class': 'co-trav' }, gt);
 
     var ringG = S('g', { 'class': 'co-ringg' }, world);
-    S('circle', { cx: T.C[0], cy: T.C[1], r: 34, 'class': 'co-ring' }, ringG);
-    ln(ringG, T.C[0] - 24, T.C[1] + 24, T.C[0] + 24, T.C[1] - 24, 'co-ring');
+    S('circle', { cx: T.C[0], cy: T.C[1], r: 24, 'class': 'co-ring' }, ringG);
+    ln(ringG, T.C[0] - 17, T.C[1] + 17, T.C[0] + 17, T.C[1] - 17, 'co-ring');
 
     var sprout = buildSprout(world);
-    sprout.g.setAttribute('transform', 'translate(' + f1(T.C[0]) + ' ' + f1(T.C[1]) + ')');
 
     var tan = ln(world, 0, 0, 0, 0, 'co-tan');
     var tanLabel = txt(world, 'f′(x)', 0, 0, 18, 'co-f', 'middle');
 
     /* 발판과 라쿤 */
-    var ledge = S('g', { 'class': 'co-ledge' }, world);
-    ln(ledge, RX - 78, LEDGE, RX + 78, LEDGE, 'co-ledge-top');
-    var hd = '', hx;
-    for (hx = RX - 70; hx <= RX + 70; hx += 14) hd += 'M' + hx + ' ' + (LEDGE + 2) + 'l-9 11';
-    S('path', { d: hd, 'class': 'co-ln' }, ledge);
+    var ledge = S('g', {}, world);
+    ln(ledge, RX - 70, LEDGE, RX + 70, LEDGE, 'mr-ln mr-ledge');
+    dot(ledge, RX - 70, LEDGE, 2.4, 'mr-dot'); dot(ledge, RX + 70, LEDGE, 2.4, 'mr-dot');
     var rcWrap = S('g', {}, world);
     var rc = buildRaccoon(rcWrap);
 
     var ball = S('g', { 'class': 'co-ball' }, world);
-    var ballC = S('circle', { cx: 0, cy: 0, r: 12, 'class': 'co-ball-c' }, ball);
-    var ballH = S('circle', { cx: -4, cy: -4, r: 3.4, 'class': 'co-ball-h' }, ball);
-
-    /* 접근성용 목록 */
-    if (list) {
-      for (i = 0; i < N; i++) {
-        var li = document.createElement('li');
-        li.textContent = LAYERS[i].name + ' — ' + LAYERS[i].sub;
-        list.appendChild(li);
-      }
-    }
-
-    /* 오른쪽 점: 층으로 건너뛰기 */
-    var dotBtns = [];
-    if (dotsBox && !reduce) {
-      for (i = 0; i < N; i++) {
-        (function (idx) {
-          var li2 = document.createElement('li');
-          var b = document.createElement('button');
-          b.type = 'button';
-          b.setAttribute('aria-label', pad2(idx + 1) + ' ' + LAYERS[idx].name + ' 로 이동');
-          b.addEventListener('click', function () { scrollToLayer(idx); });
-          li2.appendChild(b); dotsBox.appendChild(li2);
-          dotBtns.push(b);
-        })(i);
-      }
-    }
+    var ballHalo = S('circle', { cx: 0, cy: 0, r: 15, 'class': 'co-ball-halo' }, ball);
+    var ballC = S('circle', { cx: 0, cy: 0, r: 8, 'class': 'co-ball-c' }, ball);
 
     /* --- 크기 --- */
-    var view = { vx: 0, vw: 1000, vh: 600, sc: 1, k: 1 };
-    var lastP = 0, lastIdx = -1, lastEnd = null;
+    var view = { vx: 0, vw: 1000, vh: 500, sc: 1, k: 1 };
+    var lastP = 0, lastIdx = -1;
 
     function resize() {
-      var r = stage.getBoundingClientRect(), W = r.width || 1000, Hh = r.height || 600, f, vw, vh, asp;
-      if (reduce) { f = clamp((W - 360) / 540, 0, 1); vw = 750 + 250 * f; vh = H; }
-      else { asp = W / Hh; f = clamp((asp - 0.55) / 0.95, 0, 1); vw = 750 + 250 * f; vh = vw / asp; }
-      view.vw = vw; view.vh = vh; view.vx = 150 - 150 * f; view.sc = W / vw;
+      var r = host.getBoundingClientRect(), W = r.width || 600, Hh = r.height || 400, vw, vx;
+      if (compactQ && compactQ.matches) { vw = BOX_R - BOX_L + 40; vx = BOX_L - 20; }     // 좁은 화면: 그림 전체를 가운데에
+      else { vw = (BOX_R - BOX_L) / 0.42; vx = BOX_R - vw; }                               // 넓은 화면: 글 오른쪽의 42%에 모은다
+      view.vw = vw; view.vx = vx; view.vh = vw * Hh / W; view.sc = W / vw;
       view.k = clamp(0.9 / view.sc, 1, 1.55);
-      svg.setAttribute('viewBox', f1(view.vx) + ' 0 ' + f1(vw) + ' ' + f1(vh));
+      svg.setAttribute('viewBox', f1(vx) + ' 0 ' + f1(vw) + ' ' + f1(view.vh));
       var u = 1 / view.sc;
-      rail.setAttribute('stroke-width', f1(3 * u));
-      trav.setAttribute('stroke-width', f1(3.4 * u));
-      ties.setAttribute('stroke-width', f1(10 * u));
-      ties.setAttribute('stroke-dasharray', f1(1.8 * u) + ' ' + f1(11 * u));
-      ballC.setAttribute('stroke-width', f1(2 * u));
+      rail.setAttribute('stroke-width', f1(2 * u));
+      trav.setAttribute('stroke-width', f1(2.6 * u));
+      ties.setAttribute('stroke-width', f1(8 * u));
+      ties.setAttribute('stroke-dasharray', f1(1.6 * u) + ' ' + f1(11 * u));
       rcWrap.setAttribute('transform', 'translate(' + RX + ' ' + LEDGE + ') scale(' + f1(view.k) + ')');
+      sprout.g.setAttribute('transform', 'translate(' + f1(T.C[0]) + ' ' + f1(T.C[1]) + ') scale(' + f1(view.k) + ')');
       draw(lastP);
     }
 
-    /* --- 한 장면 그리기 --- */
+    /* --- 한 장면 그리기 (p: 0~1) --- */
     function at(kf) {
       var k0 = Math.min(M - 2, Math.max(0, Math.floor(kf))), fr = clamp(kf - k0, 0, 1);
-      return [lerp(T.xs[k0], T.xs[k0 + 1], fr), lerp(T.ys[k0], T.ys[k0 + 1], fr), lerp(T.fy[k0], T.fy[k0 + 1], fr), k0, fr];
+      return [lerp(T.xs[k0], T.xs[k0 + 1], fr), lerp(T.ys[k0], T.ys[k0 + 1], fr), lerp(T.fy[k0], T.fy[k0 + 1], fr)];
     }
     function kOf(piece, u) {
-      var lo = T.pk[piece], hi = T.pk[piece + 1], mid, fr, d;
+      var lo = T.pk[piece], hi = T.pk[piece + 1], mid, fr, dd;
       while (hi - lo > 1) { mid = (lo + hi) >> 1; if (T.tc[mid] < u) lo = mid; else hi = mid; }
-      d = T.tc[hi] - T.tc[lo];
-      fr = d > 1e-9 ? (u - T.tc[lo]) / d : 0;
+      dd = T.tc[hi] - T.tc[lo];
+      fr = dd > 1e-9 ? (u - T.tc[lo]) / dd : 0;
       return lo + clamp(fr, 0, 1);
     }
 
     function draw(p) {
       lastP = p;
-      var kk = view.k, tau, a, pos, kf, ref, ballR = 12 * kk, shrink = 1, idx, g, bx, by, tp, tx, ty2, s;
-      var tgt = [T.xs[0], T.ys[0]], rel = pawPos(ARM.rel, kk, 38), fl, lift, near;
+      var kk = view.k, tau, a, pos, kf = 0, ref, ballR = 8 * kk, shrink = 1, idx, g, bx, by, tp, tx, ty2, s, fl, lift;
+      var tgt = [T.xs[0], T.ys[0]], rel = pawPos(ARM.rel, kk, BALL_DIST), near;
 
       if (p < PT) {
-        tau = p / PT; a = armAt(tau); kf = 0;
-        if (tau < REL_AT) pos = pawPos(a, kk, 38);
+        tau = seg(p / PT, 0.1, 1); a = armAt(tau);
+        if (tau < REL_AT) pos = pawPos(a, kk, BALL_DIST);
         else {
           fl = seg(tau, REL_AT, 1);
           lift = 70 + 0.3 * Math.abs(tgt[0] - rel[0]);
           pos = [lerp(rel[0], tgt[0], fl), lerp(rel[1], tgt[1], fl) - 4 * lift * fl * (1 - fl)];
         }
-        ref = lerp(250, T.fy[0], ease(tau));
+        ref = lerp(250, T.fy[0], ease(seg(p / PT, 0.1, 1)));
       } else {
         a = ARM.fol;
         if (p >= PE) kf = M - 1;
@@ -652,31 +632,27 @@
       }
       bx = pos[0]; by = pos[1];
 
-      /* 새싹: PE 이후 스크롤로 자란다 */
+      /* 새싹: PE 이후에 조그맣게 자란다 */
       g = ease(seg(p, PE, 1));
-      var ks = Math.max(1.5, view.k * 1.2), sl = ease(seg(g, 0.55, 1));
-      sprout.g.setAttribute('transform', 'translate(' + f1(T.C[0]) + ' ' + f1(T.C[1]) + ') scale(' + f1(ks) + ')');
+      var sl = ease(seg(g, 0.55, 1));
       sprout.stem.setAttribute('stroke-dasharray', '100');
       sprout.stem.setAttribute('stroke-dashoffset', f1(100 * (1 - seg(g, 0, 0.7))));
-      sprout.l.setAttribute('transform', 'translate(2 -66) rotate(20) scale(' + f1(-sl) + ' ' + f1(sl) + ')');
-      sprout.r.setAttribute('transform', 'translate(2 -66) rotate(-20) scale(' + f1(sl) + ' ' + f1(sl) + ')');
-      sprout.bud.setAttribute('r', f1(3.4 * seg(g, 0.6, 0.8) * (1 - sl)));
+      sprout.l.setAttribute('transform', 'translate(1 -20) rotate(22) scale(' + f1(-sl) + ' ' + f1(sl) + ')');
+      sprout.r.setAttribute('transform', 'translate(1 -20) rotate(-22) scale(' + f1(sl) + ' ' + f1(sl) + ')');
       sprout.g.setAttribute('opacity', g > 0.001 ? 1 : 0);
-      ringG.setAttribute('opacity', f1(1 - 0.65 * g));
+      ringG.setAttribute('opacity', f1(1 - 0.55 * g));
 
       /* 공 */
       ball.setAttribute('transform', 'translate(' + f1(bx) + ' ' + f1(by) + ')');
       ballC.setAttribute('r', f1(ballR * shrink));
-      ballH.setAttribute('r', f1(ballR * shrink * 0.28));
-      ballH.setAttribute('cx', f1(-ballR * shrink * 0.34));
-      ballH.setAttribute('cy', f1(-ballR * shrink * 0.34));
+      ballHalo.setAttribute('r', f1(ballR * 1.9 * shrink));
       ball.setAttribute('opacity', g > 0.08 ? 0 : 1);
 
-      /* 지나온 길만 파랗게 */
+      /* 지나온 길만 진하게 */
       if (p < PT) trav.setAttribute('stroke-dasharray', '0 ' + f1(T.L + 100));
       else trav.setAttribute('stroke-dasharray', f1(kf * DS) + ' ' + f1(T.L + 100));
 
-      /* 미적분 층: 공이 있는 곳의 접선 */
+      /* Calculus 층: 공이 있는 곳의 접선 */
       near = p >= PT && p < PE ? Math.min(N - 1, Math.floor((p - PT) / (PE - PT) * N)) : -1;
       if (near === 3) {
         tx = T.xs[Math.min(M - 1, Math.ceil(kf))] - T.xs[Math.max(0, Math.floor(kf) - 1)];
@@ -690,84 +666,86 @@
       } else { tan.setAttribute('opacity', 0); tanLabel.setAttribute('opacity', 0); }
 
       /* 라쿤: 팔과 눈동자 */
-      rc.arm.setAttribute('transform', 'translate(22 -52) rotate(' + f1(a) + ')');
-      var hdx = bx - RX, hdy = by - (LEDGE - 76 * kk), hl = Math.sqrt(hdx * hdx + hdy * hdy) || 1, amt = Math.min(1, hl / 120) * 2.2;
-      rc.pl.setAttribute('cx', f1(-12 + hdx / hl * amt)); rc.pl.setAttribute('cy', f1(-77 + hdy / hl * amt));
-      rc.pr.setAttribute('cx', f1(12 + hdx / hl * amt));  rc.pr.setAttribute('cy', f1(-77 + hdy / hl * amt));
+      rc.arm.setAttribute('transform', 'translate(' + SHOULDER[0] + ' ' + SHOULDER[1] + ') rotate(' + f1(a) + ')');
+      var hdx = bx - RX, hdy = by - (LEDGE - 76 * kk), hl = Math.sqrt(hdx * hdx + hdy * hdy) || 1, amt = Math.min(1, hl / 120) * 1.8;
+      rc.pl.setAttribute('cx', f1(-13 + hdx / hl * amt)); rc.pl.setAttribute('cy', f1(-76 + hdy / hl * amt));
+      rc.pr.setAttribute('cx', f1(13 + hdx / hl * amt));  rc.pr.setAttribute('cy', f1(-76 + hdy / hl * amt));
 
-      /* 카메라 */
+      /* 카메라: 공이 있는 곳의 완만한 높이를 따라 내려간다 */
       var phi = lerp(0.6, 0.42, ease(seg(p, PT, PT + 0.1)));
-      var cam = reduce ? 0 : clamp(ref - phi * view.vh, 0, Math.max(0, H - view.vh));
+      var cam = clamp(ref - phi * view.vh, 0, Math.max(0, H - view.vh));
       world.setAttribute('transform', 'translate(0 ' + f1(-cam) + ')');
       for (i = 0; i < N; i++) {
         bands[i].g.setAttribute('display', (bands[i].bot < cam - 80 || bands[i].top > cam + view.vh + 80) ? 'none' : 'inline');
       }
 
-      /* 카드·점 */
-      if (!reduce) {
-        idx = p < PT ? 0 : (p >= PE ? N - 1 : Math.min(N - 1, Math.floor((p - PT) / (PE - PT) * N)));
-        if (idx !== lastIdx) {
-          lastIdx = idx;
-          if (elNo) elNo.textContent = pad2(idx + 1) + ' / ' + pad2(N);
-          if (elName) elName.textContent = LAYERS[idx].name;
-          if (elSub) elSub.textContent = LAYERS[idx].sub;
-          if (elOp) elOp.textContent = LAYERS[idx].op;
-          dotBtns.forEach(function (b, n2) {
-            if (n2 === idx) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
-          });
-        }
-        var isEnd = p >= PE + 0.02;
-        if (isEnd !== lastEnd) { lastEnd = isEnd; if (card) card.classList.toggle('is-end', isEnd); }
-        if (hint) hint.style.opacity = f1(1 - seg(p, 0, 0.03));
+      /* 아래 줄의 설명 */
+      idx = p < PT ? 0 : (p >= PE ? N - 1 : Math.min(N - 1, Math.floor((p - PT) / (PE - PT) * N)));
+      if (idx !== lastIdx) {
+        lastIdx = idx;
+        if (caption) caption.textContent = pad2(idx + 1) + ' / ' + pad2(N) + '  ' + LAYERS[idx].name + ' · ' + LAYERS[idx].sub;
       }
     }
 
-    /* --- 스크롤 → 진행도 --- */
-    function progress() {
-      var r = track.getBoundingClientRect(), total = track.offsetHeight - stage.offsetHeight;
-      if (total <= 0) return 0;
-      return clamp((STICKY_TOP - r.top) / total, 0, 1);
+    /* --- 시간 → 장면 --- */
+    var t = 0, last = 0, raf = 0, paused = reduce, visible = true;
+
+    function render(tt) {
+      draw(clamp(tt / D, 0, 1));
+      fade.setAttribute('opacity', reduce ? 1 : f1(Math.min(seg(tt, 0, T_FADE), 1 - seg(tt, LOOP - T_FADE, LOOP))));
     }
-    function scrollToLayer(n) {
-      var r = track.getBoundingClientRect(), total = track.offsetHeight - stage.offsetHeight;
-      var target = PT + (n + 0.04) / N * (PE - PT);
-      var y = window.pageYOffset + r.top - STICKY_TOP + target * total;
-      var smooth = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-      window.scrollTo({ top: y, behavior: smooth ? 'smooth' : 'auto' });
+    function frame(now) {
+      raf = 0;
+      if (paused || !visible) return;
+      var dt = Math.min((now - last) / 1000, 0.1);
+      last = now; t += dt;
+      if (t >= LOOP) t -= LOOP;
+      render(t);
+      raf = requestAnimationFrame(frame);
+    }
+    function play() {
+      if (raf || paused || !visible || reduce) return;
+      last = performance.now();
+      raf = requestAnimationFrame(frame);
+    }
+    function pause() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+    function label() {
+      if (!toggle) return;
+      toggle.setAttribute('aria-pressed', paused ? 'true' : 'false');
+      toggle.setAttribute('aria-label', paused ? '배경 애니메이션 재생' : '배경 애니메이션 일시정지');
+      toggle.setAttribute('data-state', paused ? 'paused' : 'playing');
     }
 
-    var ticking = false;
-    function onScroll() {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(function () {
-        ticking = false;
-        var r = track.getBoundingClientRect();
-        if (r.bottom < -300 || r.top > window.innerHeight + 300) return;
-        draw(progress());
+    if (toggle) {
+      if (reduce) toggle.hidden = true;
+      toggle.addEventListener('click', function () {
+        paused = !paused; label();
+        if (paused) pause(); else play();
       });
     }
-
-    root.classList.toggle('is-static', reduce);
-    root.hidden = false;
-    resize();
-    if (reduce) {
-      draw(1);                                       // 끝까지 간 모습 한 장
-    } else {
-      window.addEventListener('scroll', onScroll, { passive: true });
-      draw(progress());
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        visible = es[0].isIntersecting;
+        if (visible) play(); else pause();
+      }, { threshold: 0 }).observe(root);
     }
     var rz = null;
     window.addEventListener('resize', function () {
       if (rz) window.cancelAnimationFrame(rz);
-      rz = window.requestAnimationFrame(function () { rz = null; resize(); if (!reduce) draw(progress()); });
+      rz = window.requestAnimationFrame(function () { rz = null; resize(); });
     });
-    window.addEventListener('load', function () { resize(); if (!reduce) draw(progress()); });
 
-    return {
-      draw: draw, resize: resize, track: T, view: view, layers: LAYERS,
-      PT: PT, PE: PE
+    resize();
+    if (reduce) { t = (PT + 0.012) * D; render(t); }      // 움직이지 않는 화면: 공이 막 트랙에 내려앉은 순간
+    else { render(0); label(); play(); }
+    label();
+
+    var api = {
+      show: function (tt) { pause(); paused = true; label(); t = tt; render(tt); },   // 테스트·캡처용
+      track: T, view: view, layers: LAYERS, D: D, LOOP: LOOP, PT: PT, PE: PE
     };
+    window.AboutArt.last = api;
+    return api;
   }
 
   window.AboutArt = { init: init };
