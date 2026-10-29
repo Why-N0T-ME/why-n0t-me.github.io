@@ -1,6 +1,8 @@
 ---
 title: "Squared Flag"
 date: 2026-10-06
+featured: 3
+summary: 선형방정식을 SageMath의 solve_right()로 풀어 flag를 구합니다.
 categories: ['CTF/Wargame']
 tags: [Dreamhack, SageMath, Linear-Equation]
 description: Squared Flag 풀이 - M · flag = result 꼴의 선형방정식을 SageMath의 solve_right()로 풀어 flag를 구한다

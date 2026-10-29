@@ -2,95 +2,83 @@
 layout: default
 ---
 {%- assign body = content | strip -%}
-<div class="ow-wrap">
+{%- assign n = 0 -%}
+<div class="wrap page-main">
+  <header class="pagehead">
+    <div class="eyebrow"><i></i>About</div>
+  </header>
 
-  <section class="ow-about-hero">
-    <div class="ow-avatar">
-      <img src="{{ site.avatar | relative_url }}" alt="{{ page.display_name | default: site.social.name }} 프로필 사진" width="800" height="800">
-    </div>
-    <div class="ow-about-copy">
-      <span class="ow-tag">자기소개</span>
-      <h1 class="ow-about-name">{{ page.display_name | default: site.social.name }}</h1>
-      {%- if page.headline -%}
-      <div class="ow-about-headline">{{ page.headline }}</div>
-      {%- endif -%}
-      {%- if page.intro -%}
-      <p class="ow-about-intro">{{ page.intro }}</p>
-      {%- endif -%}
+  <section class="about-top">
+    <img class="avatar" src="{{ site.avatar | relative_url }}" alt="{{ page.display_name | default: site.social.name }} 프로필 사진" width="168" height="168" decoding="async">
+    <div class="about-copy">
+      <h1 class="about-name">{{ page.display_name | default: site.social.name }}</h1>
+      {%- if page.headline -%}<div class="headline">{{ page.headline }}</div>{%- endif -%}
+      {%- if page.intro -%}<p class="intro">{{ page.intro }}</p>{%- endif -%}
       {%- if page.links -%}
-      <div class="ow-about-links">
+      <div class="btns">
         {%- for l in page.links -%}
-        <a class="ow-btn-solid" href="{{ l.url }}">
-          {%- if l.icon == 'github' -%}
-          <svg class="ow-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 19c-5 1.500-5-2.500-7-3m14 6v-3.870a3.370 3.370 0 0 0-.940-2.610c3.140-.350 6.440-1.540 6.440-7A5.440 5.440 0 0 0 20 4.770 5.070 5.070 0 0 0 19.910 1S18.730.650 16 2.480a13.380 13.380 0 0 0-7 0C6.270.650 5.090 1 5.090 1A5.070 5.070 0 0 0 5 4.770a5.440 5.440 0 0 0-1.500 3.780c0 5.420 3.300 6.610 6.440 7A3.370 3.370 0 0 0 9 18.130V22"/></svg>
-          {%- elsif l.icon == 'mail' -%}
-          <svg class="ow-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14"/><path d="M3 7l9 6 9-6"/></svg>
-          {%- endif -%}
-          {{ l.label }}</a>
+        <a class="btn{% if forloop.first %} primary{% endif %}" href="{{ l.url }}"{% unless l.url contains 'mailto:' %} rel="noopener"{% endunless %}>{{ l.label }}</a>
         {%- endfor -%}
       </div>
       {%- endif -%}
     </div>
   </section>
 
-  <div class="ow-about-grid">
-    {%- if page.interests -%}
-    <section class="ow-panel ow-about-panel" aria-labelledby="ow-interest-h">
-      <h2 class="ow-ph" id="ow-interest-h">관심 기술</h2>
-      <ul class="ow-interests">
-        {%- for i in page.interests -%}
-        <li><b>{{ i.name }}</b>{% if i.desc %}<span>{{ i.desc }}</span>{% endif %}</li>
-        {%- endfor -%}
-      </ul>
-    </section>
-    {%- endif -%}
+  {%- if page.interests -%}
+  {%- assign n = n | plus: 1 -%}
+  <section class="block" aria-labelledby="ab-interest">
+    <h2 id="ab-interest"><span class="no">0{{ n }}</span>관심 분야</h2>
+    <ul class="defs">
+      {%- for i in page.interests -%}
+      <li><b>{{ i.name }}</b>{% if i.desc %}<span>{{ i.desc }}</span>{% endif %}</li>
+      {%- endfor -%}
+    </ul>
+  </section>
+  {%- endif -%}
 
-    {%- if page.timeline -%}
-    <section class="ow-panel ow-about-panel" aria-labelledby="ow-timeline-h">
-      <h2 class="ow-ph" id="ow-timeline-h">활동 이력</h2>
-      <ol class="ow-history">
-        {%- for t in page.timeline -%}
-        <li><b>{{ t.title }}</b><span>{{ t.period }}</span>{% if t.desc %}<p>{{ t.desc }}</p>{% endif %}</li>
-        {%- endfor -%}
-      </ol>
-    </section>
-    {%- endif -%}
-  </div>
+  {%- if page.timeline -%}
+  {%- assign n = n | plus: 1 -%}
+  <section class="block" aria-labelledby="ab-timeline">
+    <h2 id="ab-timeline"><span class="no">0{{ n }}</span>활동 이력</h2>
+    <ul class="defs">
+      {%- for t in page.timeline -%}
+      <li><b>{{ t.title }}</b><span>{{ t.period }}</span>{% if t.desc %}<p>{{ t.desc }}</p>{% endif %}</li>
+      {%- endfor -%}
+    </ul>
+  </section>
+  {%- endif -%}
 
   {%- if page.awards -%}
-  <section class="ow-panel ow-about-panel ow-block" aria-labelledby="ow-awards-h">
-    <h2 class="ow-ph" id="ow-awards-h">자격증 · 수상</h2>
-    <ul class="ow-awards">
+  {%- assign n = n | plus: 1 -%}
+  <section class="block" aria-labelledby="ab-awards">
+    <h2 id="ab-awards"><span class="no">0{{ n }}</span>자격증 · 수상</h2>
+    <ul class="defs">
       {%- for a in page.awards -%}
-      <li>
-        <span class="ow-hex"><svg class="ow-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.600 5.600 6 .7-4.500 4.100 1.200 6L12 16.400 6.700 19.400l1.200-6L3.400 9.300l6-.7z"/></svg></span>
-        <b>{{ a.title }}</b>
-        {%- if a.date -%}<span>{{ a.date }}</span>{%- endif -%}
-      </li>
+      <li><b>{{ a.title }}</b>{% if a.date %}<span>{{ a.date }}</span>{% endif %}</li>
       {%- endfor -%}
     </ul>
   </section>
   {%- endif -%}
 
   {%- if body != '' -%}
-  <section class="ow-panel ow-about-panel ow-block ow-prose ow-typo">
-    {{ content }}
+  <section class="block">
+    <div class="prose prose--narrow">
+      {{ content }}
+    </div>
   </section>
   {%- endif -%}
 
-  <section class="ow-panel ow-about-panel ow-block" aria-labelledby="ow-stats-h">
-    <h2 class="ow-ph" id="ow-stats-h">카테고리별 글</h2>
-    <div class="ow-statrow">
+  {%- assign n = n | plus: 1 -%}
+  <section class="block" aria-labelledby="ab-stats">
+    <h2 id="ab-stats"><span class="no">0{{ n }}</span>분야별 글</h2>
+    <div class="statrow">
       {%- for c in site.data.categories -%}
         {%- assign c_n = site.categories[c.name] | size -%}
-        {%- assign c_slug = c.name | slugify | url_encode -%}
         {%- if c_n > 0 -%}
-        <a class="ow-stat-card" href="{{ '/categories/' | append: c_slug | append: '/' | relative_url }}" style="--c1:{{ c.from }};--c2:{{ c.to }}"><span class="ow-stat-face"><small>{{ c.name }}</small><b>{{ c_n }}</b></span></a>
-        {%- else -%}
-        <div class="ow-stat-card is-empty" style="--c1:{{ c.from }};--c2:{{ c.to }}"><span class="ow-stat-face"><small>{{ c.name }}</small><b>0</b></span></div>
+        {%- assign c_slug = c.name | slugify | url_encode -%}
+        <a class="stat" href="{{ '/categories/' | append: c_slug | append: '/' | relative_url }}"><small>{{ c.name }}</small><b>{{ c_n }}</b></a>
         {%- endif -%}
       {%- endfor -%}
     </div>
   </section>
-
 </div>

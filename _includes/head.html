@@ -1,6 +1,8 @@
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0a1226">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#fbfbfc" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1116" media="(prefers-color-scheme: dark)">
 
 {% seo %}
 
@@ -9,18 +11,17 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&amp;family=Rajdhani:wght@600;700&amp;display=swap">
-<link rel="stylesheet" href="{{ '/assets/css/ow.css' | relative_url }}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600&amp;family=Noto+Serif+KR:wght@500;700&amp;display=swap">
+<link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
 
 <script>
-  /* 저장된 화면 모드를 페이지가 그려지기 전에 적용 (깜빡임 방지) */
+  /* 저장된 화면 모드를 페이지가 그려지기 전에 적용 (깜빡임 방지).
+     저장된 값이 없으면 기기의 라이트/다크 설정을 그대로 따릅니다. */
   (function () {
-    var t = 'dark';
     try {
-      var s = localStorage.getItem('ow-theme');
-      if (s === 'light' || s === 'dark') { t = s; }
+      var t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') { document.documentElement.setAttribute('data-theme', t); }
     } catch (e) {}
-    document.documentElement.setAttribute('data-theme', t);
   })();
 </script>
 

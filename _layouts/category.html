@@ -3,14 +3,14 @@ layout: default
 ---
 {%- assign c_name = page.title -%}
 {%- assign c_meta = site.data.categories | where: 'name', c_name | first -%}
-<div class="ow-wrap">
-  <header class="ow-pagehead" style="--c1:{{ c_meta.from | default: '#1e6fd9' }};--c2:{{ c_meta.to | default: '#0a2a5c' }}">
-    <a class="ow-tag" href="{{ '/categories/' | relative_url }}">Categories</a>
-    <h1 class="ow-pagetitle">{{ c_name | escape }}</h1>
-    <p class="ow-pagesub">글 {{ page.posts | size }}개</p>
+<div class="wrap page-main">
+  <header class="pagehead">
+    <div class="crumbs"><a href="{{ '/categories/' | relative_url }}">Categories</a></div>
+    <h1>{{ c_name | escape }}</h1>
+    <p>{% if c_meta.desc %}{{ c_meta.desc }} · {% endif %}{{ page.posts | size }}편</p>
   </header>
 
-  <div class="ow-rows">
+  <div class="rows rows--page">
     {%- for post in page.posts -%}
       {%- include post-row.html post=post -%}
     {%- endfor -%}

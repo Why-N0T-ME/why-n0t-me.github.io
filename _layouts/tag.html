@@ -1,14 +1,14 @@
 ---
 layout: default
 ---
-<div class="ow-wrap">
-  <header class="ow-pagehead">
-    <a class="ow-tag" href="{{ '/tags/' | relative_url }}">Tags</a>
-    <h1 class="ow-pagetitle">#{{ page.title | escape }}</h1>
-    <p class="ow-pagesub">글 {{ page.posts | size }}개</p>
+<div class="wrap page-main">
+  <header class="pagehead">
+    <div class="crumbs"><a href="{{ '/tags/' | relative_url }}">Tags</a></div>
+    <h1>{{ page.title | escape }}</h1>
+    <p>{{ page.posts | size }}편</p>
   </header>
 
-  <div class="ow-rows">
+  <div class="rows rows--page">
     {%- for post in page.posts -%}
       {%- include post-row.html post=post -%}
     {%- endfor -%}

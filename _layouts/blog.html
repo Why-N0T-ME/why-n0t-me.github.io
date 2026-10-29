@@ -1,35 +1,35 @@
 ---
 layout: default
 ---
-<div class="ow-wrap">
-  <header class="ow-pagehead">
-    <span class="ow-tag">최신순</span>
-    <h1 class="ow-pagetitle">All Posts</h1>
-    <p class="ow-pagesub">전체 글 {{ site.posts | size }}개</p>
+<div class="wrap page-main">
+  <header class="pagehead">
+    <div class="eyebrow"><i></i>All posts · 최신순</div>
+    <h1>{{ page.title | escape }}</h1>
+    <p>전체 {{ site.posts | size }}편{% if paginator.total_pages > 1 %} · {{ paginator.page }} / {{ paginator.total_pages }} 페이지{% endif %}</p>
   </header>
 
-  <div class="ow-rows">
+  <div class="rows rows--page">
     {%- for post in paginator.posts -%}
       {%- include post-row.html post=post -%}
     {%- endfor -%}
   </div>
 
   {%- if paginator.total_pages > 1 -%}
-  <nav class="ow-pager" aria-label="페이지 이동">
+  <nav class="pager" aria-label="페이지 이동">
     {%- if paginator.previous_page -%}
-    <a class="ow-pg" href="{{ paginator.previous_page_path | relative_url }}" rel="prev" aria-label="이전 페이지">←</a>
+    <a class="pg" href="{{ paginator.previous_page_path | relative_url }}" rel="prev" aria-label="이전 페이지">←</a>
     {%- endif -%}
     {%- for i in (1..paginator.total_pages) -%}
       {%- if i == paginator.page -%}
-      <span class="ow-pg is-current" aria-current="page">{{ i }}</span>
+      <span class="pg is-current" aria-current="page">{{ i }}</span>
       {%- elsif i == 1 -%}
-      <a class="ow-pg" href="{{ '/blog/' | relative_url }}">1</a>
+      <a class="pg" href="{{ '/blog/' | relative_url }}">1</a>
       {%- else -%}
-      <a class="ow-pg" href="{{ site.paginate_path | replace: ':num', i | relative_url }}">{{ i }}</a>
+      <a class="pg" href="{{ site.paginate_path | replace: ':num', i | relative_url }}">{{ i }}</a>
       {%- endif -%}
     {%- endfor -%}
     {%- if paginator.next_page -%}
-    <a class="ow-pg" href="{{ paginator.next_page_path | relative_url }}" rel="next" aria-label="다음 페이지">→</a>
+    <a class="pg" href="{{ paginator.next_page_path | relative_url }}" rel="next" aria-label="다음 페이지">→</a>
     {%- endif -%}
   </nav>
   {%- endif -%}

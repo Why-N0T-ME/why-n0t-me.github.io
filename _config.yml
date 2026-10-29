@@ -1,9 +1,11 @@
-# Overwatch UI 블로그 설정
+# 연구 노트형 블로그 설정
 #
-# 기존 _config.yml 에서 그대로 가져온 값: lang(→ko), timezone, title, tagline,
-# description, url, baseurl, github, social, paginate, permalink, jekyll-archives
-# 제거한 항목: Chirpy 전용 설정 (theme, analytics, pwa, comments, pageviews,
-# assets.self_host, cdn, toc, theme_mode, collections.tabs, compress_html, sass)
+# 이 저장소는 gem 테마 없이 레이아웃·스타일을 직접 가지고 있습니다. (_layouts, _includes, assets)
+# - 홈 문구: index.html 의 front matter
+# - 홈 "Now" 카드: _data/now.yml        - 홈 "기록": _data/records.yml
+# - 카테고리 순서·설명: _data/categories.yml
+# - 홈의 대표 글: 글 front matter 에 featured: 1, 2, 3 (+ 짧은 소개 summary:)
+# 이전 Overwatch 테마에서 쓰던 파일은 _archive/overwatch/ 에 보관했습니다. (빌드에는 쓰이지 않음)
 
 lang: ko
 timezone: Asia/Seoul

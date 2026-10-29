@@ -1,9 +1,10 @@
-<footer class="ow-foot">
-  <span class="ow-copy">&copy; {{ site.time | date: '%Y' }} {{ site.social.name }}</span>
-  <span class="ow-keys">
-    {%- if page.layout == 'post' -%}
-    <span><kbd>←</kbd><kbd>→</kbd> 글 이동</span>
-    {%- endif -%}
-    <span><kbd>ESC</kbd> 설정</span>
-  </span>
+{%- assign gh = site.social.links | first -%}
+<footer class="foot">
+  <div class="wrap">
+    <span>&copy; {{ site.time | date: '%Y' }} {{ site.social.name }}</span>
+    <nav aria-label="바닥글 링크">
+      {%- if gh -%}<a href="{{ gh }}" rel="noopener">GitHub</a>{%- endif -%}
+      {%- if site.social.email -%}<a href="mailto:{{ site.social.email }}">Email</a>{%- endif -%}
+    </nav>
+  </div>
 </footer>

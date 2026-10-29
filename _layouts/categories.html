@@ -1,36 +1,36 @@
 ---
 layout: default
 ---
-<div class="ow-wrap">
-  <header class="ow-pagehead">
-    <span class="ow-tag">카테고리 {{ site.data.categories | size }}개</span>
-    <h1 class="ow-pagetitle">Categories</h1>
-    <p class="ow-pagesub">글 {{ site.posts | size }}개</p>
+{%- assign shown = 0 -%}
+{%- for c in site.data.categories -%}
+  {%- assign c_n = site.categories[c.name] | size -%}
+  {%- if c_n > 0 -%}{%- assign shown = shown | plus: 1 -%}{%- endif -%}
+{%- endfor -%}
+<div class="wrap page-main">
+  <header class="pagehead">
+    <div class="eyebrow"><i></i>Categories · {{ shown }}개 분야</div>
+    <h1>{{ page.title | escape }}</h1>
+    <p>전체 {{ site.posts | size }}편을 분야별로 나눠 봅니다.</p>
   </header>
 
-  <div class="ow-catgrid">
+  <div class="catgrid">
     {%- for c in site.data.categories -%}
       {%- assign c_posts = site.categories[c.name] -%}
       {%- assign c_n = c_posts | size -%}
-      {%- assign c_post = c_posts | first -%}
-      {%- assign c_slug = c.name | slugify | url_encode -%}
-      {%- capture c_style -%}--c1:{{ c.from }};--c2:{{ c.to }}{% if c.image %};--art:url('{{ c.image | relative_url }}'){% endif %}{%- endcapture -%}
       {%- if c_n > 0 -%}
-      <a class="ow-catcard" href="{{ '/categories/' | append: c_slug | append: '/' | relative_url }}" style="{{ c_style }}">
-        <span class="ow-catface">
-          <b class="ow-catcount">{{ c_n }}</b>
-          <span class="ow-catname">{{ c.name }}</span>
-          <span class="ow-catlatest">최근 글 · {{ c_post.title | escape }}</span>
-        </span>
-      </a>
-      {%- else -%}
-      <div class="ow-catcard is-empty" style="{{ c_style }}">
-        <span class="ow-catface">
-          <b class="ow-catcount">0</b>
-          <span class="ow-catname">{{ c.name }}</span>
-          <span class="ow-catlatest">준비 중</span>
-        </span>
-      </div>
+      {%- assign c_slug = c.name | slugify | url_encode -%}
+      <article class="catcard">
+        <div class="catcard-top">
+          <h2><a href="{{ '/categories/' | append: c_slug | append: '/' | relative_url }}">{{ c.name }}</a></h2>
+          <span class="catcard-n">{{ c_n }}</span>
+        </div>
+        {%- if c.desc -%}<p>{{ c.desc }}</p>{%- endif -%}
+        <ul aria-label="최근 글">
+          {%- for p in c_posts limit: 3 -%}
+          <li>{{ p.title | escape }}</li>
+          {%- endfor -%}
+        </ul>
+      </article>
       {%- endif -%}
     {%- endfor -%}
   </div>

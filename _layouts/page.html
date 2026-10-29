@@ -1,14 +1,12 @@
 ---
 layout: default
 ---
-<div class="ow-wrap">
-  <header class="ow-pagehead">
-    <h1 class="ow-pagetitle">{{ page.title | escape }}</h1>
-    {%- if page.subtitle -%}
-    <p class="ow-pagesub">{{ page.subtitle }}</p>
-    {%- endif -%}
+<div class="wrap page-main">
+  <header class="pagehead">
+    <h1>{{ page.title | escape }}</h1>
+    {%- if page.subtitle -%}<p>{{ page.subtitle }}</p>{%- endif -%}
   </header>
-  <div class="ow-panel ow-article ow-prose ow-typo">
+  <div class="prose prose--narrow prose--page">
     {{ content }}
   </div>
 </div>

@@ -5,71 +5,59 @@ layout: default
 {%- assign p_slug = p_cat | slugify | url_encode -%}
 {%- assign p_chars = content | strip_html | strip_newlines | size -%}
 {%- assign p_minutes = p_chars | divided_by: 700 | floor | plus: 1 -%}
+{%- assign n_h2 = content | split: '<h2 ' | size | minus: 1 -%}
+{%- assign n_h3 = content | split: '<h3 ' | size | minus: 1 -%}
+{%- assign n_heads = n_h2 | plus: n_h3 -%}
 {%- assign prev = page.previous -%}
 {%- assign next = page.next -%}
 
-<div class="ow-wrap">
-  <header class="ow-post-head">
-    {%- if p_cat -%}
-    <a class="ow-tag" href="{{ '/categories/' | append: p_slug | append: '/' | relative_url }}">{{ p_cat }}</a>
+<article class="wrap">
+  <header class="post-head">
+    <div class="crumbs">
+      <a href="{{ '/blog/' | relative_url }}">Notes</a>
+      {%- if p_cat %} / <a href="{{ '/categories/' | append: p_slug | append: '/' | relative_url }}">{{ p_cat }}</a>{% endif -%}
+    </div>
+    <h1 class="post-title">{{ page.title | escape }}</h1>
+    {%- if page.description -%}
+    <p class="post-lead">{{ page.description | escape }}</p>
     {%- endif -%}
-    <h1 class="ow-post-title">{{ page.title | escape }}</h1>
-    <div class="ow-post-meta">
-      <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y.%m.%d' }}</time>
-      <span>읽는 시간 약 {{ p_minutes }}분</span>
+    <div class="post-meta">
+      <time class="when" datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y.%m.%d' }}</time>
+      {%- if page.last_modified_at -%}
+      <span class="when">수정 {{ page.last_modified_at | date: '%Y.%m.%d' }}</span>
+      {%- endif -%}
+      <span class="when">약 {{ p_minutes }}분</span>
       {%- for t in page.tags -%}
         {%- assign t_slug = t | slugify | url_encode -%}
-        <a class="ow-chip" href="{{ '/tags/' | append: t_slug | append: '/' | relative_url }}">#{{ t }}</a>
+        <a class="chip" href="{{ '/tags/' | append: t_slug | append: '/' | relative_url }}">{{ t | escape }}</a>
       {%- endfor -%}
     </div>
   </header>
 
-  <div class="ow-post-grid">
-    {%- capture art_attrs -%}
-      {%- if prev %} data-prev="{{ prev.url | relative_url }}"{% endif -%}
-      {%- if next %} data-next="{{ next.url | relative_url }}"{% endif -%}
-    {%- endcapture -%}
-    <article class="ow-panel ow-article ow-typo" id="ow-article"{{ art_attrs }}>
+  <div class="post-grid{% if n_heads >= 2 %} has-toc{% endif %}" id="post-grid"{% if prev %} data-prev="{{ prev.url | relative_url }}"{% endif %}{% if next %} data-next="{{ next.url | relative_url }}"{% endif %}>
+    {%- if n_heads >= 2 -%}
+    <details class="toc" id="toc" open>
+      <summary>목차</summary>
+      <nav aria-label="목차"><ol id="toc-list"></ol></nav>
+    </details>
+    {%- endif -%}
+    <div class="prose" id="article">
       {{ content }}
-    </article>
-
-    <aside class="ow-side" id="ow-side" aria-label="읽은 정도와 목차">
-      <div class="ow-progress">
-        <svg width="72" height="72" viewBox="0 0 72 72" role="img" aria-label="읽은 정도">
-          <circle cx="36" cy="36" r="30" fill="none" class="ow-ring-bg" stroke-width="6"/>
-          <circle cx="36" cy="36" r="30" fill="none" class="ow-ring-fg" stroke-width="6" stroke-dasharray="188.5" stroke-dashoffset="188.5" transform="rotate(-90 36 36)" id="ow-ring"/>
-          <text x="36" y="41" text-anchor="middle" class="ow-ring-txt" id="ow-ring-txt">0%</text>
-        </svg>
-        <span>읽은 정도</span>
-      </div>
-      <nav class="ow-toc" id="ow-toc" aria-label="목차" hidden>
-        <div class="ow-toc-title">목차</div>
-        <ol id="ow-toc-list"></ol>
-      </nav>
-    </aside>
+    </div>
   </div>
 
-  <nav class="ow-postnav" aria-label="이전 글과 다음 글">
-    {%- if prev -%}
-      {%- assign pv_cat = prev.categories | first -%}
-      {%- assign pv_meta = site.data.categories | where: 'name', pv_cat | first -%}
-      <a class="ow-pn ow-pn-prev" href="{{ prev.url | relative_url }}" rel="prev" style="--c1:{{ pv_meta.from | default: '#1e6fd9' }};--c2:{{ pv_meta.to | default: '#0a2a5c' }}">
-        <span class="ow-pn-face"><small>← 이전 글</small><b>{{ prev.title | escape }}</b></span>
-      </a>
-    {%- else -%}
-      <span class="ow-pn ow-pn-prev is-empty"><span class="ow-pn-face"><small>← 이전 글</small><b>가장 오래된 글입니다</b></span></span>
-    {%- endif -%}
-
-    <a class="ow-pn-all" href="{{ '/blog/' | relative_url }}">All Posts</a>
-
-    {%- if next -%}
-      {%- assign nx_cat = next.categories | first -%}
-      {%- assign nx_meta = site.data.categories | where: 'name', nx_cat | first -%}
-      <a class="ow-pn ow-pn-next" href="{{ next.url | relative_url }}" rel="next" style="--c1:{{ nx_meta.from | default: '#7a2fd0' }};--c2:{{ nx_meta.to | default: '#2a1060' }}">
-        <span class="ow-pn-face"><small>다음 글 →</small><b>{{ next.title | escape }}</b></span>
-      </a>
-    {%- else -%}
-      <span class="ow-pn ow-pn-next is-empty"><span class="ow-pn-face"><small>다음 글 →</small><b>가장 최근 글입니다</b></span></span>
-    {%- endif -%}
-  </nav>
-</div>
+  <footer class="post-foot">
+    <nav class="pn-wrap" aria-label="이전 글과 다음 글">
+      {%- if prev -%}
+      <a class="pn" href="{{ prev.url | relative_url }}" rel="prev"><small>← 이전 글</small><b>{{ prev.title | escape }}</b></a>
+      {%- else -%}
+      <span class="pn is-empty"><small>← 이전 글</small><b>가장 오래된 글입니다</b></span>
+      {%- endif -%}
+      {%- if next -%}
+      <a class="pn next" href="{{ next.url | relative_url }}" rel="next"><small>다음 글 →</small><b>{{ next.title | escape }}</b></a>
+      {%- else -%}
+      <span class="pn next is-empty"><small>다음 글 →</small><b>가장 최근 글입니다</b></span>
+      {%- endif -%}
+    </nav>
+  </footer>
+</article>

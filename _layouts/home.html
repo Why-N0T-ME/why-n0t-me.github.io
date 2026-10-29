@@ -1,52 +1,123 @@
 ---
 layout: default
 ---
+{%- comment -%}
+  홈. 문구는 index.html 의 front matter, "Now" 는 _data/now.yml, "기록" 은 _data/records.yml 에서 가져옵니다.
+  대표 글은 글 front matter 에 featured: 1, 2, 3 ... 으로 표시한 글입니다. (숫자가 작을수록 앞에 나옵니다)
+{%- endcomment -%}
 {%- assign latest = site.posts | first -%}
-<div class="ow-stage">
-  {%- if latest -%}
-  <section class="ow-hero" aria-labelledby="ow-hero-title">
-    <div class="ow-hero-copy">
-      <span class="ow-tag">최신 글</span>
-      <h1 class="ow-hero-title" id="ow-hero-title">{{ latest.title | escape }}</h1>
-      {%- if latest.description -%}
-      <p class="ow-hero-desc">{{ latest.description | escape }}</p>
-      {%- endif -%}
-      <a class="ow-cta" href="{{ latest.url | relative_url }}">글 읽기</a>
-    </div>
-    <div class="ow-hero-art">
-      {%- if latest.image.path -%}
-      <img src="{{ latest.image.path | relative_url }}" alt="{{ latest.title | escape }} 썸네일" decoding="async">
-      {%- endif -%}
-    </div>
-  </section>
-  {%- endif -%}
+{%- assign oldest = site.posts | last -%}
+{%- assign topics = 0 -%}
+{%- for c in site.data.categories -%}
+  {%- assign c_n = site.categories[c.name] | size -%}
+  {%- if c_n > 0 -%}{%- assign topics = topics | plus: 1 -%}{%- endif -%}
+{%- endfor -%}
+{%- assign featured = site.posts | where_exp: 'p', 'p.featured != nil' | sort: 'featured' -%}
+{%- assign gh = site.social.links | first -%}
+{%- assign has_records = site.data.records | size -%}
 
-  <nav class="ow-cards" aria-label="카테고리별 최신 글">
-    {%- assign sel_done = false -%}
-    {%- for c in site.data.categories -%}
-      {%- assign c_posts = site.categories[c.name] -%}
-      {%- assign c_n = c_posts | size -%}
-      {%- assign c_post = c_posts | first -%}
-      {%- capture c_style -%}--c1:{{ c.from }};--c2:{{ c.to }}{% if c.image %};--art:url('{{ c.image | relative_url }}'){% endif %}{%- endcapture -%}
-      {%- if c_n > 0 -%}
-      <a class="ow-card{% unless sel_done %} is-sel{% endunless %}" href="{{ c_post.url | relative_url }}" style="{{ c_style }}">
-        <span class="ow-card-face">
-          {%- unless c.image -%}{%- if c_post.image.path -%}
-          <img class="ow-card-img" src="{{ c_post.image.path | relative_url }}" alt="{{ c_post.title | escape }} 썸네일" loading="lazy" decoding="async">
-          {%- endif -%}{%- endunless -%}
-          <span class="ow-card-cat">{{ c.name }}</span>
-          <span class="ow-card-title">{{ c_post.title | escape }}</span>
-        </span>
-      </a>
-      {%- assign sel_done = true -%}
-      {%- else -%}
-      <div class="ow-card is-empty" style="{{ c_style }}">
-        <span class="ow-card-face">
-          <span class="ow-card-cat">{{ c.name }}</span>
-          <span class="ow-card-title">준비 중</span>
-        </span>
+<section class="hero" data-art>
+  <div class="hero-art" data-art-svg aria-hidden="true"></div>
+  <div class="wrap hero-inner">
+    <div class="hero-copy">
+      <div class="eyebrow"><i></i>{{ page.eyebrow | default: 'Security · Cryptography' }}</div>
+      <h1>{{ page.hero_title | default: site.title }}</h1>
+      {%- if page.hero_lead -%}<p class="lead">{{ page.hero_lead }}</p>{%- endif -%}
+      <div class="btns">
+        <a class="btn primary" href="{{ '/blog/' | relative_url }}">글 읽기 →</a>
+        {%- if gh -%}<a class="btn" href="{{ gh }}" rel="noopener">GitHub</a>{%- endif -%}
+        {%- if site.social.email -%}<a class="btn" href="mailto:{{ site.social.email }}">Email</a>{%- endif -%}
+      </div>
+    </div>
+    <aside class="now" aria-label="현재 공부 중">
+      <div class="now-head"><span>Now</span><span>{{ latest.date | date: '%Y.%m' }}</span></div>
+      <dl>
+        {%- for item in site.data.now -%}
+        <div><dt>{{ item.label }}</dt><dd>{{ item.value }}</dd></div>
+        {%- endfor -%}
+      </dl>
+      <div class="now-stats">
+        <div><b>{{ site.posts | size }}</b><span>Notes</span></div>
+        <div><b>{{ topics }}</b><span>Topics</span></div>
+        <div><b>{{ oldest.date | date: '%Y.%m' }}</b><span>Since</span></div>
+      </div>
+    </aside>
+  </div>
+  <div class="art-bar">
+    <div class="wrap">
+      <button class="art-btn tog" type="button" data-art-toggle aria-label="배경 애니메이션 일시정지" aria-pressed="false" data-state="playing"></button>
+      <button class="art-btn dot" type="button" data-art-dot aria-label="Classical 장면 보기" aria-pressed="false"></button>
+      <button class="art-btn dot" type="button" data-art-dot aria-label="RSA 장면 보기" aria-pressed="false"></button>
+      <button class="art-btn dot" type="button" data-art-dot aria-label="Elliptic curve 장면 보기" aria-pressed="false"></button>
+      <button class="art-btn dot" type="button" data-art-dot aria-label="Lattice 장면 보기" aria-pressed="false"></button>
+      <span class="art-cap" data-art-caption aria-hidden="true"></span>
+    </div>
+  </div>
+</section>
+
+{%- if featured.size > 0 -%}
+<section class="sec" aria-labelledby="sec-featured">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="sec-featured"><span class="no">01</span>대표 글</h2>
+      <a href="{{ '/blog/' | relative_url }}">모든 글 보기 →</a>
+    </div>
+    <div class="cards">
+      {%- for p in featured limit: 3 -%}
+      <article class="card">
+        <div>
+          <div class="meta">{{ p.categories | first }} · {{ p.date | date: '%Y.%m.%d' }}</div>
+          <h3><a href="{{ p.url | relative_url }}">{{ p.title | escape }}</a></h3>
+          <p>{{ p.summary | default: p.description | truncate: 90 | escape }}</p>
+        </div>
+        {%- if p.tags.size > 0 -%}
+        <div class="tags">
+          {%- for t in p.tags limit: 3 -%}<span>{{ t | escape }}</span>{%- endfor -%}
+        </div>
+        {%- endif -%}
+      </article>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+{%- endif -%}
+
+<section class="sec" aria-labelledby="sec-recent">
+  <div class="wrap split">
+    <div class="split-main">
+      <div class="sec-head"><h2 id="sec-recent"><span class="no">02</span>최근 글</h2></div>
+      <div class="rows">
+        {%- for post in site.posts limit: 6 -%}
+          {%- include post-row.html post=post -%}
+        {%- endfor -%}
+      </div>
+      <a class="more" href="{{ '/blog/' | relative_url }}">모든 글 보기 →</a>
+    </div>
+
+    <aside class="split-side" aria-label="분야와 기록">
+      <div class="side-head"><span class="no">03</span><h2>분야</h2></div>
+      <div class="cats">
+        {%- for c in site.data.categories -%}
+          {%- assign c_n = site.categories[c.name] | size -%}
+          {%- if c_n > 0 -%}
+          {%- assign c_slug = c.name | slugify | url_encode -%}
+          <a href="{{ '/categories/' | append: c_slug | append: '/' | relative_url }}"><span>{{ c.name }}</span><b>{{ c_n }}</b></a>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+
+      {%- if has_records > 0 -%}
+      <div class="side-head gap"><span class="no">04</span><h2>기록</h2></div>
+      <div>
+        {%- for r in site.data.records -%}
+        <div class="log">
+          <small>{{ r.date }}</small>
+          <strong>{{ r.title }}</strong>
+          {%- if r.desc -%}<span>{{ r.desc }}</span>{%- endif -%}
+        </div>
+        {%- endfor -%}
       </div>
       {%- endif -%}
-    {%- endfor -%}
-  </nav>
-</div>
+    </aside>
+  </div>
+</section>

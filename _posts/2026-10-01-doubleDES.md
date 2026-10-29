@@ -1,6 +1,8 @@
 ---
 title: "double-DES"
 date: 2026-10-01
+featured: 2
+summary: 이중 DES 키 탐색을 Meet-in-the-Middle로 줄여 flag를 얻습니다.
 categories: ['CTF/Wargame']
 tags: [Dreamhack, Crypto, DES, Meet-in-the-Middle]
 description: double-DES 풀이 - 이중 DES 키 탐색을 Meet-in-the-Middle로 줄여 flag를 얻는다

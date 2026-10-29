@@ -1,127 +1,41 @@
-{%- assign ow_cats = site.data.categories -%}
-{%- assign ow_nav = '' -%}
-{%- if page.layout == 'post' or page.url contains '/categories/' -%}
-  {%- assign ow_nav = 'categories' -%}
-{%- elsif page.url contains '/archives/' -%}
-  {%- assign ow_nav = 'archives' -%}
-{%- elsif page.url contains '/tags/' -%}
-  {%- assign ow_nav = 'tags' -%}
-{%- elsif page.url contains '/about/' -%}
-  {%- assign ow_nav = 'about' -%}
+{%- comment -%}
+  현재 위치 표시: 정확히 이 페이지면 aria-current="page", 이 구역 안이면 aria-current="true".
+{%- endcomment -%}
+{%- assign nav = '' -%}
+{%- assign nav_exact = false -%}
+{%- if page.url == '/' -%}
+  {%- assign nav = 'notes' -%}{%- assign nav_exact = true -%}
 {%- elsif page.url contains '/blog/' -%}
-  {%- assign ow_nav = 'blog' -%}
+  {%- assign nav = 'notes' -%}
+{%- elsif page.layout == 'post' or page.url contains '/categories/' -%}
+  {%- assign nav = 'categories' -%}
+  {%- if page.url == '/categories/' -%}{%- assign nav_exact = true -%}{%- endif -%}
+{%- elsif page.url contains '/archives/' -%}
+  {%- assign nav = 'archives' -%}{%- assign nav_exact = true -%}
+{%- elsif page.url contains '/tags/' -%}
+  {%- assign nav = 'tags' -%}
+  {%- if page.url == '/tags/' -%}{%- assign nav_exact = true -%}{%- endif -%}
+{%- elsif page.url contains '/about/' -%}
+  {%- assign nav = 'about' -%}{%- assign nav_exact = true -%}
 {%- endif -%}
+{%- if nav_exact -%}{%- assign cur = ' aria-current="page"' -%}{%- else -%}{%- assign cur = ' aria-current="true"' -%}{%- endif -%}
+{%- assign gh = site.social.links | first -%}
 
-<header class="ow-bar">
-  <a class="ow-home" href="{{ '/' | relative_url }}" aria-label="홈">
-    <svg class="ow-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg>
-  </a>
-
-  <nav class="ow-nav" aria-label="주 메뉴">
-    <div class="ow-dd" data-dd>
-      <button type="button" class="ow-navlink{% if ow_nav == 'categories' %} is-active{% endif %}" aria-haspopup="true" aria-expanded="false" aria-controls="ow-catmenu" data-dd-btn>Categories</button>
-      <ul class="ow-dd-menu" id="ow-catmenu">
-        {%- for c in ow_cats -%}
-          {%- assign c_n = site.categories[c.name] | size -%}
-          {%- assign c_slug = c.name | slugify | url_encode -%}
-          <li>
-            {%- if c_n > 0 -%}
-            <a class="ow-dd-item" href="{{ '/categories/' | append: c_slug | append: '/' | relative_url }}" style="--c1:{{ c.from }};--c2:{{ c.to }}"><i class="ow-dot" aria-hidden="true"></i><span>{{ c.name }}</span><b>{{ c_n }}</b></a>
-            {%- else -%}
-            <span class="ow-dd-item is-empty" style="--c1:{{ c.from }};--c2:{{ c.to }}"><i class="ow-dot" aria-hidden="true"></i><span>{{ c.name }}</span><b>0</b></span>
-            {%- endif -%}
-          </li>
-        {%- endfor -%}
-      </ul>
+<header class="bar">
+  <div class="wrap">
+    <a class="mark" href="{{ '/' | relative_url }}" aria-label="Choi notes 홈"><b>Choi</b><span>/ notes</span></a>
+    <nav class="nav" aria-label="주 메뉴">
+      <a href="{{ '/' | relative_url }}"{% if nav == 'notes' %}{{ cur }}{% endif %}>Notes</a>
+      <a href="{{ '/categories/' | relative_url }}"{% if nav == 'categories' %}{{ cur }}{% endif %}>Categories</a>
+      <a href="{{ '/archives/' | relative_url }}"{% if nav == 'archives' %}{{ cur }}{% endif %}>Archives</a>
+      <a href="{{ '/tags/' | relative_url }}"{% if nav == 'tags' %}{{ cur }}{% endif %}>Tags</a>
+      <a href="{{ '/about/' | relative_url }}"{% if nav == 'about' %}{{ cur }}{% endif %}>About</a>
+    </nav>
+    <div class="tools">
+      {%- if gh -%}<a class="gh" href="{{ gh }}" rel="noopener">GitHub ↗</a>{%- endif -%}
+      <button class="theme-btn" id="theme-btn" type="button" aria-label="화면 모드 전환" aria-pressed="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>
+      </button>
     </div>
-    <a class="ow-navlink{% if ow_nav == 'archives' %} is-active{% endif %}" href="{{ '/archives/' | relative_url }}">Archives</a>
-    <a class="ow-navlink{% if ow_nav == 'tags' %} is-active{% endif %}" href="{{ '/tags/' | relative_url }}">Tags</a>
-  </nav>
-
-  <a class="ow-play{% if ow_nav == 'blog' %} is-active{% endif %}" href="{{ '/blog/' | relative_url }}"><span>All Posts</span></a>
-
-  <div class="ow-tools">
-    <a class="ow-stat ow-stat--cat" href="{{ '/categories/' | relative_url }}">
-      <svg class="ow-gem" width="30" height="30" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
-        <defs>
-          <linearGradient id="owi-ct" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d4f7ff"/><stop offset=".45" stop-color="#5fdcff"/><stop offset="1" stop-color="#1b9be0"/></linearGradient>
-          <linearGradient id="owi-cl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f9ae0"/><stop offset="1" stop-color="#0a4a92"/></linearGradient>
-          <linearGradient id="owi-cr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#37b6f2"/><stop offset="1" stop-color="#0f66b4"/></linearGradient>
-        </defs>
-        <g stroke-linejoin="round">
-          <path d="M3 17.5l11 5.5v3l-11-5.5z" fill="url(#owi-cl)"/><path d="M25 17.5l-11 5.5v3l11-5.5z" fill="url(#owi-cr)"/><path d="M14 12l11 5.5-11 5.5-11-5.5z" fill="url(#owi-ct)" opacity=".8"/>
-          <path d="M3 12.5l11 5.5v3l-11-5.5z" fill="url(#owi-cl)"/><path d="M25 12.5l-11 5.5v3l11-5.5z" fill="url(#owi-cr)"/><path d="M14 7l11 5.5-11 5.5-11-5.5z" fill="url(#owi-ct)" opacity=".9"/>
-          <path d="M3 7.5l11 5.5v3l-11-5.5z" fill="url(#owi-cl)"/><path d="M25 7.5l-11 5.5v3l11-5.5z" fill="url(#owi-cr)"/><path d="M14 2l11 5.5-11 5.5-11-5.5z" fill="url(#owi-ct)"/>
-          <path d="M3 7.5L14 2l11 5.5" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="1"/>
-          <path d="M8 6.2l5-2.3" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>
-          <path d="M3 7.5v3M3 12.5v3M3 17.5v3M25 7.5v3M25 12.5v3M25 17.5v3" fill="none" stroke="#06305f" stroke-opacity=".55" stroke-width=".8"/>
-        </g>
-      </svg>
-      <span class="ow-stat-t"><b>{{ ow_cats | size }}</b><span>Categories</span></span>
-    </a>
-    <a class="ow-stat ow-stat--posts" href="{{ '/blog/' | relative_url }}">
-      <svg class="ow-gem" width="30" height="30" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
-        <defs>
-          <linearGradient id="owi-pb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd35e"/><stop offset=".55" stop-color="#f99e1a"/><stop offset="1" stop-color="#c25a05"/></linearGradient>
-          <linearGradient id="owi-pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-          <linearGradient id="owi-pf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0b8"/><stop offset="1" stop-color="#e8890f"/></linearGradient>
-        </defs>
-        <path d="M7 2h10l7 7v15a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="url(#owi-pb)"/>
-        <path d="M7 2h10l7 7v6H5V4a2 2 0 0 1 2-2z" fill="url(#owi-pg)"/>
-        <path d="M17 2l7 7h-5a2 2 0 0 1-2-2z" fill="url(#owi-pf)"/>
-        <path d="M17 2l7 7h-5a2 2 0 0 1-2-2z" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".8" stroke-linejoin="round"/>
-        <path d="M5.6 4.4A1.6 1.6 0 0 1 7 2.6h9.6" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1.1" stroke-linecap="round"/>
-        <g fill="#6b3300" opacity=".72"><rect x="9" y="12" width="10" height="1.8" rx=".9"/><rect x="9" y="16" width="10" height="1.8" rx=".9"/><rect x="9" y="20" width="6" height="1.8" rx=".9"/></g>
-        <path d="M5 24V4a2 2 0 0 1 2-2" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width=".8"/>
-      </svg>
-      <span class="ow-stat-t"><b>{{ site.posts | size }}</b><span>All Posts</span></span>
-    </a>
-    <a class="ow-ico ow-ico--loot" href="{{ '/blog/' | relative_url }}" data-loot-open aria-haspopup="dialog" aria-label="전리품 상자 열기">
-      <svg class="ow-gem" width="36" height="36" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-        <defs>
-          <linearGradient id="owi-lt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffbe0"/><stop offset=".5" stop-color="#ffe27a"/><stop offset="1" stop-color="#ffb81f"/></linearGradient>
-          <linearGradient id="owi-ll" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7ab14"/><stop offset="1" stop-color="#a85a00"/></linearGradient>
-          <linearGradient id="owi-lr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd23f"/><stop offset="1" stop-color="#cf7c06"/></linearGradient>
-          <linearGradient id="owi-lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".7"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient>
-        </defs>
-        <g stroke-linejoin="round">
-          <path d="M4 14.5l12 6.5v9L4 23.5z" fill="url(#owi-ll)"/><path d="M28 14.5L16 21v9l12-6.5z" fill="url(#owi-lr)"/>
-          <path d="M4 9.5l12 6.5v5L4 14.5z" fill="url(#owi-ll)"/><path d="M28 9.5L16 16v5l12-6.5z" fill="url(#owi-lr)"/>
-          <path d="M4 14.5l12 6.5 12-6.5" fill="none" stroke="#7a4300" stroke-opacity=".85" stroke-width="1"/>
-          <path d="M16 3l12 6.5-12 6.5L4 9.5z" fill="url(#owi-lt)"/>
-          <path d="M16 3l12 6.5-12 6.5L4 9.5z" fill="url(#owi-lg)"/>
-          <path d="M4 9.5L16 3l12 6.5" fill="none" stroke="#fff" stroke-opacity=".95" stroke-width="1.1"/>
-          <path d="M16 16v5" stroke="#8a4d00" stroke-opacity=".6" stroke-width=".8"/>
-          <path d="M4 9.5v14L16 30l12-6.5v-14" fill="none" stroke="#7a4300" stroke-opacity=".7" stroke-width=".9"/>
-          <rect x="13.6" y="18.2" width="4.8" height="6.8" rx="1.2" fill="#5a3000"/>
-          <rect x="14.5" y="19.1" width="3" height="5" rx=".8" fill="#ffd23f"/><circle cx="16" cy="21.1" r=".95" fill="#5a3000"/>
-          <path d="M9 7.6l5.4-2.9" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" opacity=".9"/>
-        </g>
-      </svg>
-    </a>
-    <a class="ow-ico" href="{{ '/archives/' | relative_url }}" aria-label="아카이브">
-      <svg class="ow-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M8 14l-2 8 6-3 6 3-2-8"/></svg>
-    </a>
-    <a class="ow-profile{% if ow_nav == 'about' %} is-active{% endif %}" href="{{ '/about/' | relative_url }}" aria-label="소개">
-      <img src="{{ site.avatar_small | relative_url }}" alt="프로필 사진" width="64" height="64">
-    </a>
-    <button type="button" class="ow-ico" id="ow-settings-btn" aria-label="설정" aria-haspopup="dialog" aria-expanded="false" aria-controls="ow-settings">
-      <svg class="ow-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
-    </button>
   </div>
 </header>
-
-<div class="ow-settings" id="ow-settings" role="dialog" aria-label="설정" hidden>
-  <div class="ow-settings-title">설정</div>
-  <div class="ow-set-row" data-fs-row>
-    <span id="ow-fs-label">전체화면</span>
-    <button type="button" class="ow-btn" data-fs-toggle aria-labelledby="ow-fs-label" aria-pressed="false">켜기</button>
-  </div>
-  <div class="ow-set-row">
-    <span id="ow-theme-label">화면 모드</span>
-    <span class="ow-seg" role="group" aria-labelledby="ow-theme-label">
-      <button type="button" class="ow-btn" data-theme-set="dark" aria-pressed="true">다크</button>
-      <button type="button" class="ow-btn" data-theme-set="light" aria-pressed="false">라이트</button>
-    </span>
-  </div>
-</div>
