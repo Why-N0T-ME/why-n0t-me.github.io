@@ -33,9 +33,17 @@
     </nav>
     <div class="tools">
       {%- if gh -%}<a class="gh" href="{{ gh }}" rel="noopener">GitHub ↗</a>{%- endif -%}
-      <button class="theme-btn" id="theme-btn" type="button" aria-label="화면 모드 전환" title="화면 모드 전환">
-        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>
-      </button>
+      <div class="theme">
+        <button class="theme-btn" id="theme-btn" type="button" aria-label="화면 모드" title="화면 모드" aria-haspopup="menu" aria-expanded="false" aria-controls="theme-menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>
+        </button>
+        <div class="theme-menu" id="theme-menu" role="menu" aria-label="화면 모드" hidden>
+          <button type="button" role="menuitemradio" aria-checked="false" data-theme-choice="auto"><span class="sw sw-auto" aria-hidden="true"></span>기기 설정</button>
+          <button type="button" role="menuitemradio" aria-checked="false" data-theme-choice="light"><span class="sw sw-light" aria-hidden="true"></span>라이트</button>
+          <button type="button" role="menuitemradio" aria-checked="false" data-theme-choice="dark"><span class="sw sw-dark" aria-hidden="true"></span>다크</button>
+          <button type="button" role="menuitemradio" aria-checked="false" data-theme-choice="green"><span class="sw sw-green" aria-hidden="true"></span>다크 그린</button>
+        </div>
+      </div>
     </div>
   </div>
 </header>

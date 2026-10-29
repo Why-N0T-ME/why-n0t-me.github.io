@@ -1,5 +1,5 @@
 /* 연구 노트형 블로그 스크립트 (의존성 없음)
-   1. 예전 서비스 워커 정리  2. 화면 모드 버튼  3. 히어로·About 애니메이션 시작
+   1. 예전 서비스 워커 정리  2. 화면 모드 메뉴  3. 히어로·About 애니메이션 시작
    4. 글의 목차와 현재 위치  5. 코드 블록 머리글·복사, 표 감싸기 */
 (function () {
   'use strict';
@@ -24,37 +24,82 @@
     }
   } catch (e) { /* 지원하지 않는 환경이면 무시 */ }
 
-  /* 2. 화면 모드: 라이트 → 다크 → 다크 그린 순으로 바뀝니다 ---------------- */
+  /* 2. 화면 모드: 버튼을 누르면 메뉴가 열립니다 (기기 설정 · 라이트 · 다크 · 다크 그린) */
   var themeBtn = $('#theme-btn');
+  var themeMenu = $('#theme-menu');
+  var themeItems = themeMenu ? $$('[data-theme-choice]', themeMenu) : [];
   var darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
   var MODES = ['light', 'dark', 'green'];
-  var MODE_NAME = { light: '라이트', dark: '다크', green: '다크 그린' };
+  var MODE_NAME = { auto: '기기 설정', light: '라이트', dark: '다크', green: '다크 그린' };
   var META_COLOR = { light: '#fbfbfc', dark: '#0e1116', green: '#0c1713' };   // 주소창 색
   var metas = $$('meta[name="theme-color"]');
   metas.forEach(function (m) { m.setAttribute('data-orig', m.getAttribute('content') || ''); });
 
-  function currentMode() {
+  function choice() {                       // 사용자가 고른 값 (없으면 기기 설정)
     var t = root.getAttribute('data-theme');
-    if (MODES.indexOf(t) !== -1) return t;
+    return MODES.indexOf(t) !== -1 ? t : 'auto';
+  }
+  function effective() {                    // 실제로 보이는 모드
+    var c = choice();
+    if (c !== 'auto') return c;
     return darkQuery && darkQuery.matches ? 'dark' : 'light';
   }
   function syncTheme() {
-    var forced = root.getAttribute('data-theme');
+    var c = choice(), e = effective(), text = c === 'auto' ? MODE_NAME.auto + ' · ' + MODE_NAME[e] : MODE_NAME[c];
     metas.forEach(function (m) {
-      m.setAttribute('content', MODES.indexOf(forced) !== -1 ? META_COLOR[forced] : m.getAttribute('data-orig'));
+      m.setAttribute('content', c === 'auto' ? m.getAttribute('data-orig') : META_COLOR[c]);
     });
-    if (!themeBtn) return;
-    var cur = currentMode(), next = MODES[(MODES.indexOf(cur) + 1) % MODES.length];
-    themeBtn.setAttribute('data-mode', cur);
-    themeBtn.setAttribute('aria-label', '화면 모드 전환 (지금: ' + MODE_NAME[cur] + ')');
-    themeBtn.setAttribute('title', MODE_NAME[cur] + ' → ' + MODE_NAME[next]);
+    themeItems.forEach(function (it) {
+      it.setAttribute('aria-checked', it.getAttribute('data-theme-choice') === c ? 'true' : 'false');
+    });
+    if (themeBtn) {
+      themeBtn.setAttribute('data-mode', e);
+      themeBtn.setAttribute('aria-label', '화면 모드 (지금: ' + text + ')');
+      themeBtn.setAttribute('title', '화면 모드: ' + text);
+    }
   }
-  if (themeBtn) {
-    themeBtn.addEventListener('click', function () {
-      var next = MODES[(MODES.indexOf(currentMode()) + 1) % MODES.length];
-      root.setAttribute('data-theme', next);
-      try { window.localStorage.setItem('theme', next); } catch (e) { /* 저장소를 못 쓰면 이번 방문에만 적용 */ }
-      syncTheme();
+  function setChoice(c) {
+    if (c === 'auto') {
+      root.removeAttribute('data-theme');
+      try { window.localStorage.removeItem('theme'); } catch (e) { /* 무시 */ }
+    } else {
+      root.setAttribute('data-theme', c);
+      try { window.localStorage.setItem('theme', c); } catch (e) { /* 저장소를 못 쓰면 이번 방문에만 적용 */ }
+    }
+    syncTheme();
+  }
+  function menuOpen() { return !!themeMenu && !themeMenu.hidden; }
+  function closeMenu(refocus) {
+    if (!themeMenu || themeMenu.hidden) return;
+    themeMenu.hidden = true;
+    themeBtn.setAttribute('aria-expanded', 'false');
+    if (refocus) themeBtn.focus();
+  }
+  function openMenu() {
+    themeMenu.hidden = false;
+    themeBtn.setAttribute('aria-expanded', 'true');
+    var cur = themeItems.filter(function (it) { return it.getAttribute('aria-checked') === 'true'; })[0] || themeItems[0];
+    if (cur) cur.focus();
+  }
+  if (themeBtn && themeMenu) {
+    themeBtn.addEventListener('click', function () { if (menuOpen()) closeMenu(false); else openMenu(); });
+    themeBtn.addEventListener('keydown', function (ev) {
+      if (ev.key === 'ArrowDown' && !menuOpen()) { ev.preventDefault(); openMenu(); }
+    });
+    themeItems.forEach(function (it) {
+      it.addEventListener('click', function () { setChoice(it.getAttribute('data-theme-choice')); closeMenu(true); });
+    });
+    themeMenu.addEventListener('keydown', function (ev) {
+      var i = themeItems.indexOf(doc.activeElement), n = themeItems.length;
+      if (ev.key === 'ArrowDown') { ev.preventDefault(); themeItems[(i + 1) % n].focus(); }
+      else if (ev.key === 'ArrowUp') { ev.preventDefault(); themeItems[(i - 1 + n) % n].focus(); }
+      else if (ev.key === 'Home') { ev.preventDefault(); themeItems[0].focus(); }
+      else if (ev.key === 'End') { ev.preventDefault(); themeItems[n - 1].focus(); }
+      else if (ev.key === 'Escape') { ev.preventDefault(); closeMenu(true); }
+      else if (ev.key === 'Tab') { closeMenu(true); }
+    });
+    doc.addEventListener('click', function (ev) {
+      if (menuOpen() && !ev.target.closest('.theme')) closeMenu(false);
     });
   }
   if (darkQuery && darkQuery.addEventListener) darkQuery.addEventListener('change', syncTheme);

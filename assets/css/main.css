@@ -111,6 +111,27 @@ img { max-width: 100%; }
 }
 .theme-btn:hover { border-color: var(--muted); }
 .theme-btn[data-mode="green"] { color: var(--accent); }
+/* 화면 모드 메뉴: 버튼을 누르면 아래로 펼쳐집니다 */
+.theme { position: relative; }
+.theme-menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 60; min-width: 184px; padding: 4px;
+  border: 1px solid var(--line); border-radius: 4px; background: var(--surface);
+}
+.theme-menu[hidden] { display: none; }
+.theme-menu button {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 0 12px;
+  border: 0; border-radius: 3px; background: transparent; color: var(--ink2);
+  font: 500 14px var(--sans); text-align: left; cursor: pointer;
+}
+.theme-menu button:hover, .theme-menu button:focus-visible { background: var(--code-bg); color: var(--ink); }
+.theme-menu button:focus-visible { outline-offset: -2px; }
+.theme-menu button[aria-checked="true"] { color: var(--ink); font-weight: 600; }
+.theme-menu button[aria-checked="true"]::after { content: '✓'; margin-left: auto; color: var(--accent); }
+.sw { flex: none; width: 18px; height: 18px; border: 1px solid var(--muted); border-radius: 50%; }
+.sw-auto { background: linear-gradient(90deg, #fbfbfc 50%, #0e1116 50%); }
+.sw-light { background: radial-gradient(circle, #2342b5 0 3px, #fbfbfc 3.5px); }
+.sw-dark { background: radial-gradient(circle, #8ca2ff 0 3px, #0e1116 3.5px); }
+.sw-green { background: radial-gradient(circle, #7be0b0 0 3px, #0c1713 3.5px); }
 
 /* 4. 히어로와 암호 애니메이션 --------------------------------------------- */
 .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
