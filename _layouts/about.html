@@ -45,7 +45,7 @@ layout: default
     <h2 id="ab-interest"><span class="no">0{{ n }}</span>관심 분야</h2>
     <ul class="defs">
       {%- for i in page.interests -%}
-      <li><b>{{ i.name }}</b>{% if i.desc %}<span>{{ i.desc }}</span>{% endif %}</li>
+      <li><b>{{ i.name }}</b>{% if i.desc %}<span>{{ i.desc }}</span>{% endif %}{% if i.why %}<p>{{ i.why }}</p>{% endif %}</li>
       {%- endfor -%}
     </ul>
   </section>
