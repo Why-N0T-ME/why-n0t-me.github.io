@@ -1,9 +1,11 @@
 ---
-title: "Abstract-algebra-Notes/01"
+title: "Abstract Algebra Notes 01 · Sets and Maps"
 date: 2026-10-29
+featured: 3
+summary: Sets and maps, injective, surjective and bijective maps, with exercises.
 categories: ['잡동사니']
 tags: [Math, Abstract-Algebra]
-description: 현대대수학 정리하면서 정리한거 올리는 글
+description: Notes on Introduction to Abstract Algebra (Paulin) 01 - sets and maps, injective, surjective and bijective maps
 math: true
 ---
 
