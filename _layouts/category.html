@@ -3,16 +3,43 @@ layout: default
 ---
 {%- assign c_name = page.title -%}
 {%- assign c_meta = site.data.categories | where: 'name', c_name | first -%}
+{%- capture c_rows -%}
+<div class="rows rows--page">
+  {%- for post in page.posts -%}{%- include post-row.html post=post -%}{%- endfor -%}
+</div>
+{%- endcapture -%}
+{%- if c_name == '잡동사니' -%}
+{%- comment -%}
+  잡동사니(수학)만 상단에 수식이 나타났다 사라지는 배경을 둡니다. (assets/js/math-art.js, assets/css/math-art.css)
+  다른 카테고리는 아래 else 쪽의 기본 모양 그대로입니다.
+{%- endcomment -%}
+<link rel="stylesheet" href="{{ '/assets/css/math-art.css' | relative_url }}">
+<section class="math-hero" data-math-hero>
+  <div class="math-art" data-math-art aria-hidden="true"></div>
+  <div class="wrap math-hero-inner">
+    <header class="pagehead">
+      <div class="crumbs"><a href="{{ '/categories/' | relative_url }}" data-math-keep>Categories</a></div>
+      <h1 data-math-keep>{{ c_name | escape }}</h1>
+      <p data-math-keep>{% if c_meta.desc %}{{ c_meta.desc }} · {% endif %}{{ page.posts | size }}편</p>
+    </header>
+  </div>
+  <div class="art-bar">
+    <div class="wrap">
+      <button class="art-btn tog" type="button" data-math-toggle data-math-keep aria-label="배경 애니메이션 일시정지" aria-pressed="false" data-state="playing"></button>
+    </div>
+  </div>
+</section>
+<div class="wrap page-main">
+  {{ c_rows }}
+</div>
+<script src="{{ '/assets/js/math-art.js' | relative_url }}" defer></script>
+{%- else -%}
 <div class="wrap page-main">
   <header class="pagehead">
     <div class="crumbs"><a href="{{ '/categories/' | relative_url }}">Categories</a></div>
     <h1>{{ c_name | escape }}</h1>
     <p>{% if c_meta.desc %}{{ c_meta.desc }} · {% endif %}{{ page.posts | size }}편</p>
   </header>
-
-  <div class="rows rows--page">
-    {%- for post in page.posts -%}
-      {%- include post-row.html post=post -%}
-    {%- endfor -%}
-  </div>
+  {{ c_rows }}
 </div>
+{%- endif -%}

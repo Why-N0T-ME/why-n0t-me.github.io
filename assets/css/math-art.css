@@ -1,0 +1,83 @@
+/* 잡동사니 카테고리 상단: 수식이 나타났다 사라지는 배경 (assets/js/math-art.js 와 함께 씁니다)
+   - 색은 사이트의 --art, 점 격자는 --grid 를 그대로 써서 라이트·다크·다크 그린이 자동으로 따라갑니다.
+   - 일시정지 버튼은 main.css 의 .art-bar / .art-btn 을 그대로 씁니다. */
+
+.math-hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
+.math-hero::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(circle, var(--grid) 1.2px, transparent 1.7px);
+  background-size: 24px 24px;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 92%);
+  mask-image: linear-gradient(180deg, #000 0%, transparent 92%);
+}
+.math-hero-inner { position: relative; z-index: 1; padding-bottom: 76px; }
+.math-hero .pagehead { max-width: 760px; }
+.math-hero + .page-main .rows--page { margin-top: 28px; }
+.math-hero .art-btn[hidden] { display: none; }   /* 움직임 줄이기 설정이면 버튼을 숨김 */
+
+/* 수식이 놓이는 층: 글 뒤에 깔리고 클릭을 가로채지 않습니다 */
+.math-art {
+  position: absolute; top: 0; bottom: 0; left: 0; right: 0; max-width: 1200px; margin: 0 auto;
+  pointer-events: none; z-index: 0; overflow: hidden;
+}
+.mf {
+  position: absolute; left: 0; top: 0; opacity: 0; white-space: nowrap;
+  color: var(--art); line-height: 1.5; letter-spacing: 0;
+  font-family: 'STIX Two Text', 'Cambria Math', 'Latin Modern Roman', 'Times New Roman', 'Noto Serif', 'DejaVu Serif', serif;
+  font-kerning: normal; user-select: none; -webkit-user-select: none;
+  will-change: opacity, transform;
+}
+.mf.s1 { font-size: 16px; }
+.mf.s2 { font-size: 22px; }
+.mf.s3 { font-size: 31px; }
+
+/* --- 수식 조각 (변환기가 만드는 HTML) --- */
+.mf i { font-style: italic; }
+.mf b { font-weight: 700; }
+.mf sup, .mf sub { font-size: .7em; line-height: 0; margin-right: .04em; }
+.mf i + sup { margin-left: .07em; }
+.mf .pr { margin-left: .06em; }
+.mf .ss { display: inline-flex; flex-direction: column; vertical-align: middle; font-size: .7em; line-height: 1.15; margin-left: .04em; }
+.mf .bin { margin: 0 .22em; }
+.mf .rel { margin: 0 .3em; }
+.mf .cm { margin-right: .2em; }
+.mf .cl { margin: 0 .12em; }
+.mf .th { display: inline-block; width: .17em; }
+.mf .mh { display: inline-block; width: .28em; }
+.mf .q1 { display: inline-block; width: 1em; }
+.mf .q7 { display: inline-block; width: .7em; }
+.mf .fn { font-style: normal; margin: 0 .14em 0 .16em; }
+.mf .fn + sup, .mf .fn + sub { margin-left: -.14em; }
+.mf .fn + sub { margin-right: .16em; }
+.mf i + .fn { margin-left: .2em; }
+.mf .dl { display: inline-block; transform: scale(1, 1.75); transform-origin: 50% 56%; margin: 0 .04em; }
+.mf sup .bin, .mf sub .bin, .mf .ss .bin, .mf .lm > span .bin, .mf .sl .bin { margin: 0 .06em; }
+.mf sup .rel, .mf sub .rel, .mf .ss .rel, .mf .lm > span .rel, .mf .sl .rel { margin: 0 .1em; }
+
+.mf .fr { display: inline-flex; flex-direction: column; align-items: stretch; text-align: center; vertical-align: middle; margin: 0 .1em; line-height: 1.25; font-size: .92em; }
+.mf .fr > span:first-child { padding: 0 .18em .06em; border-bottom: 1px solid currentColor; }
+.mf .fr > span:last-child { padding: .06em .18em 0; }
+/* 제곱근: 위 선은 글 상자의 윗변, 꺾인 부분은 글 상자 높이에 맞춰 늘어나는 모양(글꼴마다 √ 크기가 달라서 직접 그림) */
+.mf .sq { white-space: nowrap; }
+.mf .rt { position: relative; display: inline-block; line-height: 1.1; border-top: 1px solid currentColor; padding: .06em .1em 0 .95em; margin-left: .04em; }
+.mf .rt::before {
+  content: ''; position: absolute; left: 0; top: -1px; bottom: .02em; width: .9em; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 20' preserveAspectRatio='none'%3E%3Cpath d='M.4 11.2L2.2 9.8L4.8 18.8L9.4 .6H10' fill='none' stroke='%23000' stroke-width='.8' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat 0 0 / 100% 100%;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 20' preserveAspectRatio='none'%3E%3Cpath d='M.4 11.2L2.2 9.8L4.8 18.8L9.4 .6H10' fill='none' stroke='%23000' stroke-width='.8' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat 0 0 / 100% 100%;
+}
+
+.mf .bg { font-size: 1.45em; line-height: 1; }
+.mf .lm { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; line-height: 1.1; margin: 0 .1em; }
+.mf .lm > span:first-child, .mf .lm > span:last-child { font-size: .68em; line-height: 1.2; white-space: nowrap; }
+.mf .ig { font-size: 1.5em; line-height: 1; vertical-align: -.08em; margin-left: .1em; }
+.mf .sl { display: inline-flex; flex-direction: column; justify-content: space-between; vertical-align: middle; font-size: .68em; line-height: 1.1; height: 2.35em; margin: 0 .22em 0 -.05em; }
+
+@media (max-width: 900px) {
+  .math-hero-inner { padding-bottom: 168px; }
+  .mf.s1 { font-size: 14px; }
+  .mf.s2 { font-size: 18px; }
+  .mf.s3 { font-size: 23px; }
+}
+@media print {
+  .math-art, .math-hero::before { display: none !important; }
+}
