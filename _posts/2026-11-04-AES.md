@@ -1,0 +1,433 @@
+---
+title: "AES 정리 · 구조부터 복호화까지"
+description: "AES(Rijndael)의 라운드 구조와 SubBytes·ShiftRows·MixColumns·AddRoundKey, 키 확장, 복호화, 혼돈과 확산을 직접 계산으로 검산하며 정리한 노트"
+date: 2026-11-04 01:30:00 +0900
+categories: [기술문서, 암호학]
+tags: [AES, Rijndael, S-box, GF(2^8), 혼돈과 확산, SPN]
+math: true
+---
+
+> **한 줄 요약**  
+> AES는 128비트 블록을 4×4 바이트 **상태(state)** 로 보고, 키 없는 비선형 층(SubBytes), 키 없는 선형 섞기 층(ShiftRows, MixColumns), 키를 섞는 층(AddRoundKey)을 10번(AES-128 기준) 반복하는 **SPN 구조**다. 혼돈은 S-box가, 확산은 ShiftRows와 MixColumns가 맡는다.
+
+<!--
+  TODO(영상): 여기에 AES 암호화·복호화 영상 임베드
+  <iframe src="https://www.youtube.com/embed/VIDEO_ID"
+          style="aspect-ratio:9/16; width:100%; max-width:360px; display:block; margin:auto;"
+          allowfullscreen></iframe>
+-->
+
+## 0. 이 글의 범위
+
+- **다루는 것**: AES-128의 암호화와 복호화 전 과정, 각 단계가 왜 그렇게 생겼는지, 혼돈과 확산.
+- **다루지 않는 것**: 운영 모드(ECB, CBC, CTR, GCM), 사이드 채널 공격, 유한체의 엄밀한 이론(수학 탭에서 따로 다룬다).
+- 이 글의 숫자 예시는 FIPS 197의 예제 벡터와 직접 만든 파이썬 구현으로 대조해 확인했다.
+- CryptoHack 문제 풀이는 [CryptoHack · AES](/posts/CryptohackAES/)에 있다. 이 글은 그 풀이의 **개념 정리판**이다.
+
+## 1. 큰 그림
+
+AES는 **블록 암호**다. 키 하나를 정하면 128비트 입력을 128비트 출력으로 보내는 **가역 순열(bijection)** 하나가 정해진다. 키가 다르면 다른 순열이 나온다.
+
+| 변형 | 키 길이 | Nk (키 워드 수) | 라운드 수 Nr | 라운드 키 개수 |
+|---|---|---|---|---|
+| AES-128 | 128비트 | 4 | 10 | 11 |
+| AES-192 | 192비트 | 6 | 12 | 13 |
+| AES-256 | 256비트 | 8 | 14 | 15 |
+
+- 블록 크기는 세 변형 모두 128비트다. 라운드 키 개수는 항상 Nr + 1이다(첫 AddRoundKey 몫이 하나 더 필요하다).
+- AES는 원래 **Rijndael**(Daemen, Rijmen)의 부분집합이다. Rijndael은 블록과 키 길이를 더 다양하게 허용하지만, AES 표준(FIPS 197)은 블록을 128비트로 고정했다.
+- 구조는 **SPN(Substitution-Permutation Network)** 이다. DES 같은 Feistel 구조는 라운드마다 블록의 절반만 바뀌지만, AES는 **매 라운드 모든 바이트가 변환된다.**
+
+## 2. 상태(state)와 라운드 구조
+
+16바이트 입력 $$in_0, in_1, \dots, in_{15}$$ 를 **열 우선(column-major)** 으로 4×4 행렬에 채운다.
+
+$$
+s_{r,c} = in_{r + 4c}
+$$
+
+| | 열 0 | 열 1 | 열 2 | 열 3 |
+|---|---|---|---|---|
+| **행 0** | $$in_0$$ | $$in_4$$ | $$in_8$$ | $$in_{12}$$ |
+| **행 1** | $$in_1$$ | $$in_5$$ | $$in_9$$ | $$in_{13}$$ |
+| **행 2** | $$in_2$$ | $$in_6$$ | $$in_{10}$$ | $$in_{14}$$ |
+| **행 3** | $$in_3$$ | $$in_7$$ | $$in_{11}$$ | $$in_{15}$$ |
+
+> **인덱스 주의 (CryptoHack)**  
+> CryptoHack이 주는 `bytes2matrix`는 입력을 4바이트씩 끊어 리스트로 만든다. 그 리스트의 각 원소가 상태의 **열**이다. 따라서 `s[i][j]`에서 `i`는 열 번호, `j`는 행 번호가 되어 위 표기와 반대다. ShiftRows 같은 단계에서 인덱스를 가장 많이 헷갈리는 지점이다.
+
+AES-128의 전체 흐름은 다음과 같다.
+
+```text
+KeyExpansion       → rk[0], rk[1], …, rk[10]
+state ← plaintext
+AddRoundKey(state, rk[0])                        # 초기 키 섞기
+for r = 1 … 9:
+    SubBytes → ShiftRows → MixColumns → AddRoundKey(rk[r])
+SubBytes → ShiftRows → AddRoundKey(rk[10])       # 마지막 라운드: MixColumns 없음
+ciphertext ← state
+```
+
+**왜 맨 앞에 AddRoundKey가 있나?**  
+SubBytes, ShiftRows, MixColumns에는 키가 없다. 키 없이 계산 가능한 연산은 공격자가 그대로 따라 계산해서 벗겨낼 수 있다. 첫 연산이 키 섞기가 아니면 그 앞의 키 없는 층은 보안에 기여하지 못한다.
+
+**왜 마지막 라운드에는 MixColumns가 없나?**  
+마지막 단계가 `MixColumns → AddRoundKey`라고 하자. MixColumns는 GF(2) 위의 선형 변환이므로
+
+$$
+\text{InvMixColumns}\bigl(\text{MixColumns}(X) \oplus K\bigr) = X \oplus \text{InvMixColumns}(K)
+$$
+
+가 성립한다. 즉 마지막 MixColumns는 **키만 바뀐 것과 같아서** 보안을 더해주지 못한다. 그래서 생략하고, 덕분에 복호화 구조가 암호화와 대칭에 가까워진다.
+
+## 3. SubBytes — 혼돈(confusion)
+
+상태의 **모든 바이트를 S-box로 하나씩 치환**한다. AES에서 **유일한 비선형 연산**이다.
+
+S-box는 임의로 만든 표가 아니라 GF(2⁸)에서의 수식으로 정의된다.
+
+$$
+S(x) = A \cdot x^{-1} \oplus \texttt{0x63}, \qquad (0^{-1} := 0)
+$$
+
+1. 바이트를 GF(2⁸)의 원소로 보고 **곱셈 역원** $$x^{-1}$$ 을 구한다(0은 0으로 둔다).
+2. **아핀 변환**을 적용한다. 비트 단위로 쓰면 다음과 같다(첨자는 mod 8, $$c = \texttt{0x63}$$).
+
+$$
+b'_i = b_i \oplus b_{i+4} \oplus b_{i+5} \oplus b_{i+6} \oplus b_{i+7} \oplus c_i
+$$
+
+**예: 0x53**
+
+- 역원: $$\texttt{0x53} \cdot \texttt{0xCA} = 1$$ 이므로 $$x^{-1} = \texttt{0xCA}$$ (이진수 `11001010`)
+- 아핀 변환 후: `11101101` = **0xED**
+- 표로 읽기: 상위 니블 5가 행, 하위 니블 3이 열이므로 표의 **행 5, 열 3 = ed**
+
+<details markdown="1">
+<summary>S-box 전체 표 (펼치기)</summary>
+
+| | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **0** | 63 | 7c | 77 | 7b | f2 | 6b | 6f | c5 | 30 | 01 | 67 | 2b | fe | d7 | ab | 76 |
+| **1** | ca | 82 | c9 | 7d | fa | 59 | 47 | f0 | ad | d4 | a2 | af | 9c | a4 | 72 | c0 |
+| **2** | b7 | fd | 93 | 26 | 36 | 3f | f7 | cc | 34 | a5 | e5 | f1 | 71 | d8 | 31 | 15 |
+| **3** | 04 | c7 | 23 | c3 | 18 | 96 | 05 | 9a | 07 | 12 | 80 | e2 | eb | 27 | b2 | 75 |
+| **4** | 09 | 83 | 2c | 1a | 1b | 6e | 5a | a0 | 52 | 3b | d6 | b3 | 29 | e3 | 2f | 84 |
+| **5** | 53 | d1 | 00 | ed | 20 | fc | b1 | 5b | 6a | cb | be | 39 | 4a | 4c | 58 | cf |
+| **6** | d0 | ef | aa | fb | 43 | 4d | 33 | 85 | 45 | f9 | 02 | 7f | 50 | 3c | 9f | a8 |
+| **7** | 51 | a3 | 40 | 8f | 92 | 9d | 38 | f5 | bc | b6 | da | 21 | 10 | ff | f3 | d2 |
+| **8** | cd | 0c | 13 | ec | 5f | 97 | 44 | 17 | c4 | a7 | 7e | 3d | 64 | 5d | 19 | 73 |
+| **9** | 60 | 81 | 4f | dc | 22 | 2a | 90 | 88 | 46 | ee | b8 | 14 | de | 5e | 0b | db |
+| **A** | e0 | 32 | 3a | 0a | 49 | 06 | 24 | 5c | c2 | d3 | ac | 62 | 91 | 95 | e4 | 79 |
+| **B** | e7 | c8 | 37 | 6d | 8d | d5 | 4e | a9 | 6c | 56 | f4 | ea | 65 | 7a | ae | 08 |
+| **C** | ba | 78 | 25 | 2e | 1c | a6 | b4 | c6 | e8 | dd | 74 | 1f | 4b | bd | 8b | 8a |
+| **D** | 70 | 3e | b5 | 66 | 48 | 03 | f6 | 0e | 61 | 35 | 57 | b9 | 86 | c1 | 1d | 9e |
+| **E** | e1 | f8 | 98 | 11 | 69 | d9 | 8e | 94 | 9b | 1e | 87 | e9 | ce | 55 | 28 | df |
+| **F** | 8c | a1 | 89 | 0d | bf | e6 | 42 | 68 | 41 | 99 | 2d | 0f | b0 | 54 | bb | 16 |
+
+</details>
+
+**S-box의 성질** (표 전체를 직접 계산해 확인했다)
+
+- **고정점이 없다**: 모든 $$x$$ 에서 $$S(x) \neq x$$, 그리고 $$S(x) \neq \bar{x}$$ (비트 반전)도 없다.
+- **차분 균등성 4**: 입력 차분 $$a \neq 0$$ 에 대해 출력 차분이 같아지는 입력 개수의 최댓값이 4다. 차분 공격에 강하게 설계됐다는 뜻이다.
+- **비선형도 112**: 어떤 아핀 함수와도 크게 닮지 않았다(선형 공격에 대한 저항).
+- 아핀 변환의 상수 0x63은 역원 함수의 고정점(0과 1)을 없애기 위한 값이다. 또 역원만 쓰면 대수식이 지나치게 단순해지므로 아핀 변환으로 복잡도를 높인다.
+
+복호화에서는 역함수 표 InvS를 쓴다. 한 바이트에 대해 `INV_S[S[x]] == x` 다.
+
+S-box가 정말 이 수식에서 나오는지 코드로 확인해 볼 수 있다. 아래 코드는 256개 값을 모두 표준 S-box와 같게 만든다.
+
+```python
+def gmul(a, b):                       # GF(2^8) 곱셈, 기약다항식 m(x) = x^8 + x^4 + x^3 + x + 1 (0x11b)
+    r = 0
+    while b:
+        if b & 1:
+            r ^= a
+        a <<= 1
+        if a & 0x100:
+            a ^= 0x11B
+        b >>= 1
+    return r
+
+def sbox(x):
+    inv = next((y for y in range(1, 256) if gmul(x, y) == 1), 0)    # 곱셈 역원 (0은 0으로 둔다)
+    out = 0
+    for i in range(8):                                               # 아핀 변환
+        bit = (inv >> i) ^ (inv >> ((i + 4) % 8)) ^ (inv >> ((i + 5) % 8)) \
+              ^ (inv >> ((i + 6) % 8)) ^ (inv >> ((i + 7) % 8)) ^ (0x63 >> i)
+        out |= (bit & 1) << i
+    return out
+
+assert sbox(0x53) == 0xED and sbox(0x00) == 0x63
+```
+
+> **혼돈**은 Shannon이 말한 성질로, 키와 암호문 사이의 관계를 최대한 복잡하게 만드는 것이다. 비선형 S-box가 입력 바이트와 출력 바이트의 관계를 단순한 식으로 풀리지 않게 만든다.
+
+## 4. ShiftRows — 확산 ①: 열 사이로 퍼뜨리기
+
+행 $$r$$ 을 **왼쪽으로 $$r$$칸 순환 이동**한다(행 0은 그대로).
+
+```text
+이동 전                     이동 후
+in0  in4  in8  in12        in0  in4  in8  in12     (0칸)
+in1  in5  in9  in13   →    in5  in9  in13 in1      (1칸)
+in2  in6  in10 in14        in10 in14 in2  in6      (2칸)
+in3  in7  in11 in15        in15 in3  in7  in11     (3칸)
+```
+
+- 같은 열에 있던 4바이트가 **서로 다른 4개의 열로 흩어진다.**
+- 이 단계가 없으면 MixColumns가 열 안에서만 섞기 때문에 4개의 열이 서로 영향을 주지 못한다. 결국 32비트짜리 블록 암호 네 개를 나란히 쓰는 것과 같아진다.
+- 선형 연산이고 키가 없다. 복호화(InvShiftRows)는 **오른쪽**으로 같은 칸 수만큼 돌린다.
+
+## 5. MixColumns — 확산 ②: 열 안에서 섞기
+
+각 열(4바이트)을 GF(2⁸) 위의 벡터로 보고 고정 행렬을 곱한다.
+
+$$
+\begin{pmatrix} b_0 \\ b_1 \\ b_2 \\ b_3 \end{pmatrix}
+=
+\begin{pmatrix}
+2 & 3 & 1 & 1 \\
+1 & 2 & 3 & 1 \\
+1 & 1 & 2 & 3 \\
+3 & 1 & 1 & 2
+\end{pmatrix}
+\begin{pmatrix} a_0 \\ a_1 \\ a_2 \\ a_3 \end{pmatrix}
+$$
+
+같은 연산을 다항식으로도 쓸 수 있다. 열을 $$a(x) = a_3x^3 + a_2x^2 + a_1x + a_0$$ 로 보고, 고정 다항식 $$c(x) = 3x^3 + x^2 + x + 2$$ 에 대해 $$b(x) = a(x)\,c(x) \bmod (x^4 + 1)$$ 을 계산한 것이다.
+
+**곱셈 규칙** (행렬의 계수는 1, 2, 3뿐이다)
+
+- $$1 \cdot a = a$$
+- $$2 \cdot a = \texttt{xtime}(a)$$: 왼쪽으로 1비트 밀고, 밀기 전 최상위 비트가 1이었으면 **0x1b를 XOR** 한다. (다항식에 $$x$$ 를 곱한 뒤 $$x^8 \equiv x^4 + x^3 + x + 1 = \texttt{0x1b}$$ 로 줄이는 것이다.)
+- $$3 \cdot a = \texttt{xtime}(a) \oplus a$$
+
+> 덧셈은 XOR이므로 **올림이 없다.** 곱셈도 일반 정수 곱셈이 아니라 다항식 곱셈이다.
+
+**예제 열** $$(\texttt{db}, \texttt{13}, \texttt{53}, \texttt{45})$$
+
+- $$b_0 = 2\cdot\texttt{db} \oplus 3\cdot\texttt{13} \oplus \texttt{53} \oplus \texttt{45}$$
+- $$2\cdot\texttt{db} = \texttt{ad}$$, $$3\cdot\texttt{13} = \texttt{35}$$ 이므로 $$\texttt{ad} \oplus \texttt{35} \oplus \texttt{53} \oplus \texttt{45} = \texttt{8e}$$
+- 나머지 세 바이트까지 계산하면 열은 $$(\texttt{8e}, \texttt{4d}, \texttt{a1}, \texttt{bc})$$ 가 된다.
+
+**성질**
+
+- 이 행렬은 **MDS**(maximum distance separable)이고 **분기수(branch number)가 5**다. 입력 열에서 0이 아닌 바이트 수와 출력 열에서 0이 아닌 바이트 수의 합이 항상 5 이상이다. 입력 바이트 하나만 바뀌어도 출력 **4바이트가 모두** 바뀐다. (행렬의 모든 정사각 부분행렬이 GF(2⁸)에서 가역임을 직접 계산해 확인했다.)
+- 선형 연산이고 키가 없다.
+
+**컴팩트한 구현**(CryptoHack에서도 쓰는 형태)
+
+```python
+def xtime(a):                         # a * x (= 2 * a) in GF(2^8)
+    return ((a << 1) ^ 0x1B) & 0xFF if a & 0x80 else a << 1
+
+def mix_single_column(c):             # c = [a0, a1, a2, a3], 제자리 수정
+    t = c[0] ^ c[1] ^ c[2] ^ c[3]
+    u = c[0]
+    c[0] ^= t ^ xtime(c[0] ^ c[1])
+    c[1] ^= t ^ xtime(c[1] ^ c[2])
+    c[2] ^= t ^ xtime(c[2] ^ c[3])
+    c[3] ^= t ^ xtime(c[3] ^ u)
+```
+
+왜 이게 맞는가: $$2a_0 \oplus 3a_1 \oplus a_2 \oplus a_3 = 2(a_0 \oplus a_1) \oplus (a_1 \oplus a_2 \oplus a_3)$$ 이고, $$a_1 \oplus a_2 \oplus a_3 = t \oplus a_0$$ ($$t$$ 는 네 바이트의 XOR)이므로 $$b_0 = a_0 \oplus t \oplus \texttt{xtime}(a_0 \oplus a_1)$$ 이 된다. 나머지 행은 한 칸씩 돌려 쓴 같은 식이다.
+
+**InvMixColumns**
+
+역행렬은 다음과 같다.
+
+$$
+\begin{pmatrix}
+14 & 11 & 13 & 9 \\
+9 & 14 & 11 & 13 \\
+13 & 9 & 14 & 11 \\
+11 & 13 & 9 & 14
+\end{pmatrix}
+$$
+
+계수가 0x0e, 0x0b, 0x0d, 0x09라서 암호화보다 계산이 무겁다. 대신 다음 관계를 쓰면 MixColumns를 재활용할 수 있다. CryptoHack 힌트에 나오는 전처리 트릭이 바로 이것이다.
+
+$$
+M^{-1} = M \cdot P, \qquad
+P = \begin{pmatrix}
+5 & 0 & 4 & 0 \\
+0 & 5 & 0 & 4 \\
+4 & 0 & 5 & 0 \\
+0 & 4 & 0 & 5
+\end{pmatrix}
+$$
+
+즉 **열에 $$P$$ 를 먼저 곱한 뒤 MixColumns를 적용하면** InvMixColumns가 된다. ($$M \cdot M^{-1} = I$$ 와 위 식 모두 계산으로 확인했다.)
+
+## 6. AddRoundKey — 키 섞기
+
+128비트 상태와 128비트 라운드 키를 **바이트별로 XOR** 한다.
+
+- XOR은 **자기 자신이 역연산**이다. 복호화에서도 같은 연산을 한 번 더 하면 된다.
+- 지금까지 본 SubBytes, ShiftRows, MixColumns는 모두 **키가 없는 공개 함수**다. **키가 들어가는 곳은 AddRoundKey뿐이다.** 이 단계가 없으면 AES 전체가 누구나 계산할 수 있는 고정된 함수가 된다.
+- 파이썬에서 `bytes`를 직접 XOR하려면 `bytes(a ^ b for a, b in zip(x, y))` 처럼 새로 만들거나, 제자리 수정이 필요하면 `bytearray`를 쓴다.
+
+## 7. 키 확장 (AES-128)
+
+16바이트 키를 4개의 워드 $$w_0, \dots, w_3$$ 로 보고, 이를 44개의 워드 $$w_0, \dots, w_{43}$$ 까지 늘린다. 라운드 키 $$rk[r]$$ 은 워드 4개씩 묶은 것이다.
+
+$$
+w_i = w_{i-4} \oplus
+\begin{cases}
+\text{SubWord}\bigl(\text{RotWord}(w_{i-1})\bigr) \oplus \text{Rcon}[i/4] & i \equiv 0 \pmod 4 \\[4pt]
+w_{i-1} & \text{otherwise}
+\end{cases}
+$$
+
+- **RotWord**: 워드의 바이트를 왼쪽으로 1칸 순환 $$(a_0, a_1, a_2, a_3) \to (a_1, a_2, a_3, a_0)$$
+- **SubWord**: 4바이트 각각에 S-box 적용
+- **Rcon**: 라운드 상수 $$(x^{r-1}, 0, 0, 0)$$ 이다. 바이트 값은 `01 02 04 08 10 20 40 80 1b 36` 이다. (0x80 다음이 0x100이 아니라 0x1b인 이유는 $$x^8 \equiv \texttt{0x1b}$$ 이기 때문이다.)
+
+**예제 (FIPS 197 부록 A.1)** 키 `2b7e1516 28aed2a6 abf71588 09cf4f3c`
+
+1. $$w_3 = \texttt{09cf4f3c}$$
+2. RotWord → `cf4f3c09`
+3. SubWord → `8a84eb01`
+4. Rcon 적용 → `8a84eb01 ⊕ 01000000 = 8b84eb01`
+5. $$w_4 = w_0 \oplus \texttt{8b84eb01} = \texttt{2b7e1516} \oplus \texttt{8b84eb01} = \texttt{a0fafe17}$$
+
+이어서 $$w_5 = \texttt{88542cb1}$$, $$w_6 = \texttt{23a33939}$$, $$w_7 = \texttt{2a6c7605}$$ 이고, 마지막 워드는 $$w_{43} = \texttt{b6630ca6}$$ 이다.
+
+**설계 의도와 참고**
+
+- SubWord는 **키 스케줄에도 비선형성**을 준다. 없으면 라운드 키가 마스터 키의 선형 함수가 되어 키 복원이 쉬워진다.
+- RotWord와 Rcon은 **라운드마다 다른 키가 나오도록 대칭성을 깬다.**
+- AES-128의 키 스케줄은 **가역**이다. 라운드 키 하나만 알면 키 확장을 거꾸로 돌려 마스터 키를 복원할 수 있다. CTF에서 "라운드 키가 유출됐다" 유형이 나오는 이유다.
+- AES-192, AES-256은 Nk가 6, 8이고 확장 주기도 Nk마다 돈다. AES-256은 $$i \bmod 8 = 4$$ 에서 SubWord만 한 번 더 적용한다.
+
+## 8. 복호화
+
+암호화의 단계를 **역순으로, 각각의 역연산으로** 돌린다.
+
+| 암호화 | 복호화 |
+|---|---|
+| SubBytes (S-box) | InvSubBytes (역 S-box) |
+| ShiftRows (왼쪽으로) | InvShiftRows (오른쪽으로) |
+| MixColumns | InvMixColumns |
+| AddRoundKey(rk[r]) | AddRoundKey(rk[r]) (XOR이라 같은 연산) |
+| 라운드 키 rk[0] → rk[10] 순서 | **rk[10] → rk[0] 순서** |
+
+```text
+state ← ciphertext
+AddRoundKey(state, rk[10])
+for r = 9 … 1:
+    InvShiftRows → InvSubBytes → AddRoundKey(rk[r]) → InvMixColumns
+InvShiftRows → InvSubBytes → AddRoundKey(rk[0])
+plaintext ← state
+```
+
+**순서에서 헷갈리는 점**
+
+- 복호화에서는 **AddRoundKey가 InvMixColumns보다 먼저** 온다. 암호화의 한 라운드 `[SubBytes → ShiftRows → MixColumns → AddRoundKey]` 를 통째로 뒤집으면 `[AddRoundKey → InvMixColumns → InvShiftRows → InvSubBytes]` 가 되는데, 이를 라운드 경계에서 끊어 읽으면 위 의사코드의 순서가 된다.
+- InvShiftRows와 InvSubBytes는 **서로 순서를 바꿔도 결과가 같다.** 하나는 바이트의 값만, 다른 하나는 위치만 바꾸기 때문이다.
+- 마지막 단계(rk[0] 쪽)에는 InvMixColumns가 없다. 암호화 마지막 라운드에 MixColumns가 없었기 때문이다.
+- 속도를 위해 라운드 키에 InvMixColumns를 미리 적용해 복호화 라운드를 암호화와 같은 모양으로 만드는 **등가 역암호(equivalent inverse cipher)** 도 있다. $$\text{InvMixColumns}(s \oplus k) = \text{InvMixColumns}(s) \oplus \text{InvMixColumns}(k)$$ 이기 때문에 가능하다.
+
+## 9. 혼돈과 확산 한눈에 보기
+
+Shannon(1949)은 안전한 암호가 가져야 할 두 성질로 **혼돈(confusion)** 과 **확산(diffusion)** 을 들었다.
+
+| 단계 | 선형성 | 키 | 하는 일 |
+|---|---|---|---|
+| SubBytes | **비선형** | 없음 | 혼돈: 입력과 출력의 관계를 복잡하게 |
+| ShiftRows | 선형 | 없음 | 확산: 열 사이로 퍼뜨림 |
+| MixColumns | 선형 | 없음 | 확산: 열 안의 4바이트를 모두 섞음 |
+| AddRoundKey | 선형(XOR) | **있음** | 키 주입 |
+
+> 이 구분은 대략적인 역할 분담이다. S-box도 바이트 안에서 비트를 섞고, **AddRoundKey 없이는 어느 층도 보안을 주지 못한다**(모두 공개 함수이므로).
+
+**입력 한 바이트가 퍼지는 속도** (구조에서 바로 나온다)
+
+1. 1라운드 후: SubBytes는 위치를 바꾸지 않고, ShiftRows는 그 바이트를 한 열 안에 둔 채 이동시키며, MixColumns가 그 열의 4바이트로 퍼뜨린다. **영향받는 바이트 4개(한 열).**
+2. 2라운드 후: 그 4바이트가 ShiftRows로 서로 다른 4개의 열로 흩어지고, 각 열에서 MixColumns가 다시 4바이트로 퍼뜨린다. **16바이트 전체가 영향을 받는다.**
+
+**눈사태 실험.** 평문 한 비트를 뒤집었을 때 라운드가 끝날 때마다 128비트 중 몇 비트가 달라지는지 직접 구현한 AES-128로 쟀다(키, 평문, 뒤집는 비트를 매번 무작위로 정해 2000번 평균).
+
+| 시점 | 달라진 비트 수 (평균, 128비트 중) |
+|---|---|
+| 처음 (AddRoundKey 후) | 1 |
+| 1라운드 후 | ≈ 16 |
+| 2라운드 후 | ≈ 64 |
+| 3 ~ 10라운드 후 | ≈ 64 (계속 유지) |
+
+2라운드 만에 이상적인 값(절반, 64비트)에 도달한다. 나머지 라운드는 이 상태를 유지하면서, 확산이 아닌 **다른 공격(차분·선형 등)에 대한 안전 여유**를 쌓는 역할을 한다.
+
+## 10. 유한체 GF(2⁸)이 필요한 이유
+
+지금까지 나온 연산 중 SubBytes의 역원과 MixColumns의 곱셈은 모두 **바이트를 GF(2⁸)의 원소로 보는 관점**에서 나온다.
+
+- **덧셈 = XOR** (올림 없음)
+- **곱셈 = 다항식 곱셈 후 $$m(x) = x^8 + x^4 + x^3 + x + 1$$ ($$\texttt{0x11b}$$) 로 나눈 나머지**
+- $$m(x)$$ 가 GF(2) 위에서 **기약**이라서 이 구조가 **체(field)** 가 된다. 그래서 0이 아닌 모든 바이트에 **곱셈 역원**이 있고(S-box), MixColumns 행렬이 **가역**이 된다.
+
+**곱셈 예: $$\texttt{0x57} \cdot \texttt{0x13}$$**
+
+- $$\texttt{0x13} = \texttt{0x10} \oplus \texttt{0x02} \oplus \texttt{0x01}$$
+- xtime을 거듭 적용하면 $$\texttt{57} \to \texttt{ae} \to \texttt{47} \to \texttt{8e} \to \texttt{07}$$ 이므로 $$\texttt{0x57}\cdot\texttt{0x02} = \texttt{ae}$$, $$\texttt{0x57}\cdot\texttt{0x10} = \texttt{07}$$
+- 따라서 $$\texttt{57} \oplus \texttt{ae} \oplus \texttt{07} = \texttt{fe}$$ (FIPS 197의 예제 값과 같다.)
+
+<!-- TODO: 아래 링크를 수학 탭의 유한체 글 주소로 교체 -->
+**더 깊은 내용(체의 정의, GF(2)[x]의 기약다항식, 왜 역원이 존재하는지 등)은 수학 탭의 [체(Field)와 유한체 정리](#) 에서 다룬다.** *(작성 예정)*
+
+## 11. CryptoHack 문제와의 대응
+
+| CryptoHack 문제 | 이 글에서 참고할 부분 |
+|---|---|
+| Keyed Permutations | 1장: 블록 암호는 키마다 하나의 가역 순열 |
+| Resisting Bruteforce | 12장: 보안 현황 |
+| Structure of AES | 1장, 2장: 상태 행렬, 라운드 구조 |
+| Round Keys | 6장: AddRoundKey, 7장: 키 확장 |
+| Confusion through Permutation | 3장: S-box |
+| Diffusion through Permutation | 4장, 5장: ShiftRows, MixColumns |
+| Bringing It All Together | 7장, 8장: 키 확장과 복호화 순서 |
+
+풀이와 틀린 시도는 [CryptoHack · AES](/posts/CryptohackAES/)에 정리해 두었다.
+
+## 12. 보안 현황과 흔한 오해
+
+**보안 현황**
+
+- 전체 라운드 AES에 대한 **실용적인 공격은 알려져 있지 않다.**
+- 단일 키 설정에서 알려진 가장 좋은 이론적 공격은 biclique 분석으로, AES-128의 키 탐색 복잡도를 약 $$2^{126.1}$$ 로 낮춘다. 학술적으로는 무차별 대입보다 빠르면 "broken"이라 부르지만, 실용적인 위협은 아니다.
+- 양자 컴퓨터에서 Grover 알고리즘은 키 탐색을 제곱근만큼 줄인다. 그래서 장기 보안에는 AES-256이 권장된다.
+
+**흔한 오해**
+
+1. **"AES는 Feistel 구조다"** → 아니다. SPN이고, 매 라운드 전체 바이트가 변한다.
+2. **"S-box는 그냥 외운 임의의 표다"** → 아니다. GF(2⁸)의 역원과 아핀 변환으로 정의되며, 3장의 코드가 256개 값을 모두 재현한다.
+3. **"AES로 암호화하면 끝이다"** → AES 자체는 **16바이트 한 블록**만 처리한다. 긴 메시지는 운영 모드가 필요하고, ECB로 그대로 쓰면 같은 평문 블록이 같은 암호문 블록이 되어 패턴이 드러난다.
+4. **"마지막 라운드가 달라서 버그다"** → 의도된 설계다(2장).
+5. **"AddRoundKey는 그냥 XOR이라 별것 아니다"** → 키가 들어가는 유일한 단계다. 이것이 없으면 나머지는 모두 공개 함수다.
+
+## 13. 한 장 요약
+
+| 항목 | 내용 |
+|---|---|
+| 블록 / 키 | 128비트 / 128, 192, 256비트 |
+| 라운드 수 | 10, 12, 14 |
+| 구조 | SPN (Feistel 아님) |
+| 상태 | 4×4 바이트, 열 우선 |
+| SubBytes | S-box = GF(2⁸) 역원 + 아핀 변환 → 혼돈 |
+| ShiftRows | 행 r을 왼쪽으로 r칸 → 확산 (열 사이) |
+| MixColumns | GF(2⁸) 행렬 곱, 분기수 5 → 확산 (열 안) |
+| AddRoundKey | XOR → 키 주입, 자기 자신이 역연산 |
+| 마지막 라운드 | MixColumns 없음 |
+| 키 확장 | RotWord, SubWord, Rcon으로 44워드(AES-128) |
+| 복호화 | 역순 + 역연산, 라운드 키는 rk[10] → rk[0] |
+| 2라운드 | 입력 한 바이트가 16바이트 전체로 퍼짐 |
+
+## 참고 자료
+
+- NIST, [FIPS 197: Advanced Encryption Standard (AES)](https://csrc.nist.gov/pubs/fips/197/final)
+- J. Daemen, V. Rijmen, *The Design of Rijndael*, Springer, 2002
+- C. E. Shannon, "Communication Theory of Secrecy Systems", 1949
+- A. Bogdanov, D. Khovratovich, C. Rechberger, "Biclique Cryptanalysis of the Full AES", ASIACRYPT 2011
+- [CryptoHack · AES](/posts/CryptohackAES/) (내 풀이)
+- [CryptoHack AES 챌린지](https://cryptohack.org/challenges/aes/)
