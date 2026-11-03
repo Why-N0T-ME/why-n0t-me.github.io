@@ -21,6 +21,7 @@ image:
 | 핵심 기법 | 키드 퍼뮤테이션, S-box 비선형성, AddRoundKey |
 
 > 한 줄 요약: AES를 직접 구현하기 전 단계로, 키드 퍼뮤테이션의 정의부터 S-box의 비선형성, 라운드 키 XOR까지 AES 내부 구조의 기초를 다진다.
+> 유한체에 관한 대수적인 내용은 현대대수의 체를 다루는 글에서 더 자세히 알아보겠다.
 {: .prompt-info }
 
 ## 문제 설명
@@ -38,10 +39,10 @@ CryptoHack의 Symmetric Cryptography 코스 중 AES 챕터이다. 문제마다 A
 | Structure of AES | 10 | 완료 | 2026-10-30 |
 | Round Keys | 20 | 완료 | 2026-10-30 |
 | Confusion through Permutation | 15 | 완료 | 2026-10-30 |
-| Diffusion through Permutation | - | 진행 중 | |
+| Diffusion through Permutation | - | 완료 | 2026-11-04 |
 | Bringing It All Together | - | 진행 중 | |
 
-뒤 문제는 집에서 마저 풀어 이 글에 이어서 정리한다.
+뒤 문제는 마저 풀어 이 글에 이어서 정리한다.
 
 ## 분석
 
@@ -144,16 +145,106 @@ print(bytes(sum(result, [])))
 
 **Flag**: `crypto{l1n34rly}`
 
+### 6. Diffusion through Permutation - 행 밀기·열 혼합과 확산
+
+`ShiftRows`(행 밀기)와 `MixColumns`(열 혼합)는 단 두 라운드만으로 평문 한 바이트의 변화가 암호문 전체로 퍼지게 만든다. 행 밀기는 각 행을 순환시키는 가벼운 연산이고, 열 혼합은 그보다 훨씬 복잡하다.
+
+- **행 밀기**: $r=0$행(첫 번째 행)은 그대로 두고, $r$번째 행을 왼쪽으로 $r$칸씩 순환시킨다.
+- **열 혼합**: 갈루아 체 $$GF(2^8)$$ 위에서 state와 고정된 행렬을 행렬곱한다.
+
+#### 유한체 위의 행렬곱
+
+유한체($$GF(p^n)$$) 위의 행렬곱도 식 자체는 보통의 행렬곱과 같다. $$c_{ij} = \sum_{k} a_{ik} b_{kj}$$ 다만 곱셈과 덧셈이 실수·복소수의 연산이 아니라 유한체의 연산을 따른다. $$GF(2^n)$$에서는 덧셈이 XOR, 곱셈이 모듈러 다항식 연산이다.
+
+결합법칙은 성립하지만 교환법칙은 성립하지 않고, 정사각행렬이면서 행렬식이 0이 아니면 유클리드 호제법으로 역행렬을 구할 수 있다. `MixColumns`에 쓰이는 4×4 행렬은 $$GF(2^8)$$ 위에서 행렬식이 0이 아니어서 역행렬이 유일하게 존재하고, 그 역행렬을 적용하는 것이 `inv_mix_columns`이다.
+
+#### 인덱싱 - 틀린 시도
+
+이 코드의 `state`는 `state[열][행]`(첫 번째 인덱스가 열) 구조다. `shift_rows`를 식으로 쓰면 $$new[c][r] = old[(c+r) \bmod 4][r]$$ — **행($r$, 두 번째 인덱스)은 고정하고 열($c$, 첫 번째 인덱스)만 도는** 연산이다. `inv_shift_rows`를 짜다가 두 번 틀렸다.
+
+1. 열 하나(`s[i]`)만 백업해 놓고 그 안에서 값을 재배치했다. 하지만 행 밀기는 **다른 열의 값을 끌어와야** 하는 연산이라, 같은 열 안에서만 맴도는 방식으로는 애초에 구현할 수 없는 식이었다.
+2. 백업 범위를 행렬 전체로 늘리고 $$new[c][r] = old[(c-r) \bmod 4][r]$$ 식을 그대로 인덱싱으로 옮기니 해결됐다.
+
+```python
+def shift_rows(s):
+    s[0][1], s[1][1], s[2][1], s[3][1] = s[1][1], s[2][1], s[3][1], s[0][1]
+    s[0][2], s[1][2], s[2][2], s[3][2] = s[2][2], s[3][2], s[0][2], s[1][2]
+    s[0][3], s[1][3], s[2][3], s[3][3] = s[3][3], s[0][3], s[1][3], s[2][3]
+
+
+def inv_shift_rows(s):
+    old = [col[:] for col in s]
+    for c in range(4):
+        s[c] = [old[(c - r) % 4][r] for r in range(4)]
+    return s
+
+
+# learned from http://cs.ucsb.edu/~koc/cs178/projects/JT/aes.c
+xtime = lambda a: (((a << 1) ^ 0x1B) & 0xFF) if (a & 0x80) else (a << 1)
+
+
+def mix_single_column(a):
+    # see Sec 4.1.2 in The Design of Rijndael
+    t = a[0] ^ a[1] ^ a[2] ^ a[3]
+    u = a[0]
+    a[0] ^= t ^ xtime(a[0] ^ a[1])
+    a[1] ^= t ^ xtime(a[1] ^ a[2])
+    a[2] ^= t ^ xtime(a[2] ^ a[3])
+    a[3] ^= t ^ xtime(a[3] ^ u)
+
+
+def mix_columns(s):
+    for i in range(4):
+        mix_single_column(s[i])
+
+
+def inv_mix_columns(s):
+    # see Sec 4.1.3 in The Design of Rijndael
+    for i in range(4):
+        u = xtime(xtime(s[i][0] ^ s[i][2]))
+        v = xtime(xtime(s[i][1] ^ s[i][3]))
+        s[i][0] ^= u
+        s[i][1] ^= v
+        s[i][2] ^= u
+        s[i][3] ^= v
+
+    mix_columns(s)
+    return s
+
+
+def matrix2bytes(matrix):
+    return bytes(sum(matrix, []))
+
+
+state = [
+    [108, 106, 71, 86],
+    [96, 62, 38, 72],
+    [42, 184, 92, 209],
+    [94, 79, 8, 54],
+]
+
+s2 = inv_mix_columns(state)
+s3 = inv_shift_rows(s2)
+print(matrix2bytes(s3))
+```
+{: file="diffusion.py" }
+
+`inv_mix_columns`와 `inv_shift_rows`는 둘 다 `return s`로 자기 자신을 돌려주기 때문에 `inv_shift_rows(inv_mix_columns(s))`처럼 중첩해서 쓸 수도 있다. 다만 둘 다 `s`를 제자리에서(in-place) 바꾸고 그 결과를 돌려주는 함수라, `return` 없이 중첩하면 안쪽 함수가 `None`을 반환해 바깥 함수가 `TypeError`를 낸다. `return s`를 빼먹지 않거나, 아니면 그냥 줄을 나눠 순서대로 호출하면 된다.
+
+**Flag**: `crypto{d1ffUs3R}`
+
 ## 정리
 
 ### 핵심 요약
 1. AES는 키드 퍼뮤테이션이며, 복호화가 가능하려면 입출력이 전단사(bijection)여야 한다.
 2. 128비트 키 공간은 현재까지 알려진 최선의 단일 키 공격(비클리크 암호분석)으로도 사실상 전수조사 수준의 안전성을 유지한다.
 3. S-box는 $$GF(2^8)$$의 역원과 아핀 변환으로 만든 비선형 치환표이며, 상태 행렬의 위치가 아니라 바이트 "값"을 행/열로 쪼개 찾는다.
+4. `ShiftRows`는 행을 고정하고 열끼리 순환시키는 연산이라, 역변환은 다른 열의 값을 끌어오는 구조로 짜야 한다. 같은 열 안에서만 값을 재배치하는 방식으로는 구현할 수 없다.
 
 ### 배운 점
 - `bytes(obj)`는 리스트가 아니라 정수나 문자열을 넘기면 다른 의미로 동작한다. 바이트 단위로 값을 읽고 쓰려면 `bytearray`를 쓴다.
 - 표를 눈으로 셀 때는 한 칸씩 밀려 읽기 쉽다. 헷갈리면 코드로 직접 인덱싱해 검증하는 편이 빠르다.
+- 함수가 `return` 없이 제자리에서만 값을 바꾸는 스타일이면, 그 함수들을 중첩해서 호출할 수 없다. 줄을 나눠 순서대로 호출하거나 `return s`를 꼭 넣어야 한다.
 - 갈루아 체를 사용한다는데 현대대수 진도를 좀 빠르게빠르게 나가야할것 같다. 정수론도 해야하는데 :(
 
 ---
