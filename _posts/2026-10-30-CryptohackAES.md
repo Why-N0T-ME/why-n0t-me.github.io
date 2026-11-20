@@ -40,9 +40,7 @@ CryptoHack의 Symmetric Cryptography 코스 중 AES 챕터이다. 문제마다 A
 | Round Keys | 20 | 완료 | 2026-10-30 |
 | Confusion through Permutation | 15 | 완료 | 2026-10-30 |
 | Diffusion through Permutation | - | 완료 | 2026-11-04 |
-| Bringing It All Together | - | 진행 중 | |
-
-뒤 문제는 마저 풀어 이 글에 이어서 정리한다.
+| Bringing It All Together | - | 완료 | 2026-11-20 |
 
 ## 분석
 
@@ -233,6 +231,81 @@ print(matrix2bytes(s3))
 
 **Flag**: `crypto{d1ffUs3R}`
 
+### 7. Bringing It All Together - 키 스케줄과 전체 복호화
+
+마지막 문제는 지금까지 만든 `sub_bytes`, `shift_rows`, `mix_columns`, `add_round_key`를 모두 모아 실제로 동작하는 AES 복호화기를 완성하는 것이다. 그 전에 필요한 건 마스터 키 하나로부터 11개(`N_ROUNDS+1`)의 라운드 키를 만드는 `키 스케줄(Key Schedule)`이다.
+
+> 키 스케줄은 4바이트 단위의 "워드(word)"로 동작한다. 매 `Nk`(128비트 키 기준 4)워드마다 한 번씩 이전 워드를 1바이트 순환시키고(`RotWord`), S-box를 적용한 뒤(`SubWord`), 첫 바이트에 `라운드 상수(Rcon)`를 XOR한다. 그 결과를 `Nk`워드 전의 워드와 XOR하면 새 워드가 나온다 — 매 라운드마다 다른 키를 쓰면서도, 원래 키 하나로 전체를 복원할 수 있는 이유다.
+{: .prompt-info }
+
+복호화는 암호화의 역순으로 마지막 라운드 키부터 거꾸로 적용한다. 다만 암호화의 마지막(10번째) 라운드에는 `MixColumns`가 없었으므로, 복호화에서는 반대로 **첫 라운드(마지막 라운드 키 XOR 직후)**에 `InvMixColumns`를 생략해야 한다.
+
+```python
+N_ROUNDS = 10
+
+def expand_key(master_key):
+    """
+    마스터 키로부터 라운드 키 행렬 리스트를 만든다.
+    """
+    # Round constants https://en.wikipedia.org/wiki/AES_key_schedule#Round_constants
+    r_con = (
+        0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40,
+        0x80, 0x1B, 0x36, 0x6C, 0xD8, 0xAB, 0x4D, 0x9A,
+        0x2F, 0x5E, 0xBC, 0x63, 0xC6, 0x97, 0x35, 0x6A,
+        0xD4, 0xB3, 0x7D, 0xFA, 0xEF, 0xC5, 0x91, 0x39,
+    )
+
+    key_columns = bytes2matrix(master_key)
+    iteration_size = len(master_key) // 4
+
+    i = 1
+    while len(key_columns) < (N_ROUNDS + 1) * 4:
+        word = list(key_columns[-1])
+
+        if len(key_columns) % iteration_size == 0:
+            word.append(word.pop(0))                # RotWord
+            word = [s_box[b] for b in word]          # SubWord
+            word[0] ^= r_con[i]
+            i += 1
+        elif len(master_key) == 32 and len(key_columns) % iteration_size == 4:
+            word = [s_box[b] for b in word]
+
+        word = [a ^ b for a, b in zip(word, key_columns[-iteration_size])]
+        key_columns.append(word)
+
+    return [key_columns[4*i : 4*(i+1)] for i in range(len(key_columns) // 4)]
+
+
+def decrypt(key, ciphertext):
+    round_keys = expand_key(key)
+
+    state = bytes2matrix(ciphertext)
+    state = add_round_key(state, round_keys[N_ROUNDS])        # 마지막 라운드 키로 시작
+
+    for i in range(N_ROUNDS - 1, 0, -1):                      # 9 → 1
+        state = inv_shift_rows(state)
+        state = inv_sub_bytes(state)
+        state = add_round_key(state, round_keys[i])
+        state = inv_mix_columns(state)
+
+    state = inv_shift_rows(state)                              # 마지막 라운드: InvMixColumns 생략
+    state = inv_sub_bytes(state)
+    state = add_round_key(state, round_keys[0])
+
+    return matrix2bytes(state)
+
+
+key        = b'\xc3,\\\xa6\xb5\x80^\x0c\xdb\x8d\xa5z*\xb6\xfe\\'
+ciphertext = b'\xd1O\x14j\xa4+O\xb6\xa1\xc4\x08B)\x8f\x12\xdd'
+
+print(decrypt(key, ciphertext))
+```
+{: file="bringing_it_all_together.py" }
+
+`add_round_key`는 4번 문제에서 만든 그대로 `state`를 제자리에서 바꾸지 않고 **새 행렬을 반환**하는 함수다. 그래서 `inv_shift_rows`/`inv_mix_columns`와 섞어 쓸 때는 매번 `state = add_round_key(...)`처럼 반환값을 다시 담아줘야 한다. 이 부분만 빼먹으면 겉보기엔 잘 도는데 라운드 키가 전혀 반영되지 않아 평문이 전부 깨진다.
+
+**Flag**: `crypto{MYAES128}`
+
 ## 정리
 
 ### 핵심 요약
@@ -240,6 +313,7 @@ print(matrix2bytes(s3))
 2. 128비트 키 공간은 현재까지 알려진 최선의 단일 키 공격(비클리크 암호분석)으로도 사실상 전수조사 수준의 안전성을 유지한다.
 3. S-box는 $$GF(2^8)$$ 의 역원과 아핀 변환으로 만든 비선형 치환표이며, 상태 행렬의 위치가 아니라 바이트 "값"을 행/열로 쪼개 찾는다.
 4. `ShiftRows`는 행을 고정하고 열끼리 순환시키는 연산이라, 역변환은 다른 열의 값을 끌어오는 구조로 짜야 한다. 같은 열 안에서만 값을 재배치하는 방식으로는 구현할 수 없다.
+5. 키 스케줄은 워드(4바이트) 단위로 동작하며, `Nk`워드마다 `RotWord` → `SubWord` → `Rcon XOR`을 거쳐 `Nk`워드 전의 워드와 다시 XOR한다 — 키 하나로 라운드마다 다른 라운드 키를 만들어내는 구조다.
 
 ### 배운 점
 - `bytes(obj)`는 리스트가 아니라 정수나 문자열을 넘기면 다른 의미로 동작한다. 바이트 단위로 값을 읽고 쓰려면 `bytearray`를 쓴다.
