@@ -513,6 +513,9 @@ print("Exponent (e):", key.e)
 ```
 {: file="transparency.py" }
 
+![crt.sh 검색 결과](/assets/img/posts/ctf/crypto/cryptohack/general/crt-sh.png)
+`cryptohack.org`로 crt.sh를 검색한 결과. `thetransparencyflagishere.cryptohack.org` 서브도메인이 바로 보인다 — 해당 도메인으로 접속하면 플래그 그림을 띄워준다.
+
 **Flag**: `crypto{the_transparency_flag_is_here}`
 
 ## 정리

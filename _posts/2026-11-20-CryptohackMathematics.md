@@ -212,7 +212,6 @@ x^(k+5) ≡ 4,   x^(k+6) ≡ 836 =>  4·x ≡ 836 (mod p)
 
 **Flag**: `crypto{919,209}`
 
-나머지 Brainteasers Part 1 5문제(Common Ground, Adrien's Signs, Modular Binomials, Broken RSA, No Way Back Home), Brainteasers Part 2, Primes는 다음에 풀고 이어서 추가한다.
 
 ## 정리
 
