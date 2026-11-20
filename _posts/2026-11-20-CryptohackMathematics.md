@@ -40,7 +40,7 @@ General의 "모듈러 연산" 소주제보다 한 단계 더 들어가서, 이�
 
 #### Quadratic Residues (25pt)
 
-$a^2 \equiv x \pmod{29}$를 만족하는 $a$가 존재하면 $x$를 29에 대한 이차잉여(QR)라 부른다. 주어진 세 값 `{14, 6, 11}` 중 실제로 QR인 건 $x=6$ 하나뿐이고(29가 작은 소수라 $1$부터 $p-1$까지 다 돌려봐도 충분히 빠르다), 그 중 가장 작은 제곱근은 $a=8$이다.
+$a^2 \equiv x \pmod{29}$ 를 만족하는 $a$ 가 존재하면 $x$ 를 29에 대한 이차잉여(QR)라 부른다. 주어진 세 값 `{14, 6, 11}` 중 실제로 QR인 건 $x=6$ 하나뿐이고(29가 작은 소수라 $1$ 부터 $p-1$ 까지 다 돌려봐도 충분히 빠르다), 그 중 가장 작은 제곱근은 $a=8$ 이다.
 
 ```python
 # Quadratic Residues - find most small a s.t. a^2 ≡ ints[i] mod 29, a^2 = 29k+ints[i]
@@ -61,7 +61,7 @@ for x in ints:
 
 #### Legendre Symbol (35pt)
 
-이번엔 1024비트급 소수 $p$와 정수 10개가 주어지고, 그중 정확히 하나만 $p$에 대한 이차잉여다. 오일러의 판정법(Euler's criterion) $x^{(p-1)/2} \equiv 1 \pmod p$로 QR 여부를 가려낸다 — $U(p)$의 위수가 $p-1$이고, QR들이 그 안에서 위수 $(p-1)/2$짜리 부분군을 이룬다는 사실의 응용이다. 이 문제는 $p \equiv 3 \pmod 4$라서, Efficient Exchange(ECC Starter)에서 썼던 것과 같은 공식 $x^{(p+1)/4} \bmod p$로 제곱근을 바로 구할 수 있다. 두 제곱근 중 **더 큰 값**을 제출한다.
+이번엔 1024비트급 소수 $p$ 와 정수 10개가 주어지고, 그중 정확히 하나만 $p$ 에 대한 이차잉여다. 오일러의 판정법(Euler's criterion) $x^{(p-1)/2} \equiv 1 \pmod p$ 로 QR 여부를 가려낸다 — $U(p)$ 의 위수가 $p-1$ 이고, QR들이 그 안에서 위수 $(p-1)/2$ 짜리 부분군을 이룬다는 사실의 응용이다. 이 문제는 $p \equiv 3 \pmod 4$ 라서, Efficient Exchange(ECC Starter)에서 썼던 것과 같은 공식 $x^{(p+1)/4} \bmod p$ 로 제곱근을 바로 구할 수 있다. 두 제곱근 중 **더 큰 값**을 제출한다.
 
 ```python
 # Legendre's Symbol
@@ -91,7 +91,7 @@ for x in ints:
 
 #### Modular Square Root (35pt)
 
-이번엔 $p \equiv 1 \pmod 4$라, Legendre Symbol처럼 간단한 공식으로는 안 되고 일반적인 톤넬리-섕크스(Tonelli–Shanks) 알고리즘이 필요하다. $p-1=Q\cdot 2^S$로 분해하고, 이차비잉여 $z$ 하나를 구한 뒤, 그걸로 보정값을 곱해가며 $t$가 1이 될 때까지 반복해 제곱근을 구한다. 문제에서 요구하는 건 두 제곱근 중 **더 작은 값**.
+이번엔 $p \equiv 1 \pmod 4$ 라, Legendre Symbol처럼 간단한 공식으로는 안 되고 일반적인 톤넬리-섕크스(Tonelli–Shanks) 알고리즘이 필요하다. $p-1=Q\cdot 2^S$ 로 분해하고, 이차비잉여 $z$ 하나를 구한 뒤, 그걸로 보정값을 곱해가며 $t$ 가 1이 될 때까지 반복해 제곱근을 구한다. 문제에서 요구하는 건 두 제곱근 중 **더 작은 값**.
 
 ```python
 # Modular square root
@@ -153,7 +153,7 @@ print("큰 제곱근:", max(root1, root2))
 
 #### Chinese Remainder Theorem (40pt)
 
-서로소인 법 여러 개에 대한 연립합동식을 하나의 해로 합치는 문제다. $x \equiv a_i \pmod{m_i}$ 꼴의 식들이 주어지면, $M=\prod_i m_i$, $M_i=M/m_i$, $y_i \equiv M_i^{-1} \pmod{m_i}$로 두고 $x \equiv \sum_i a_i M_i y_i \pmod M$.
+서로소인 법 여러 개에 대한 연립합동식을 하나의 해로 합치는 문제다. $x \equiv a_i \pmod{m_i}$ 꼴의 식들이 주어지면, $M=\prod_i m_i$, $M_i=M/m_i$, $y_i \equiv M_i^{-1} \pmod{m_i}$ 로 두고 $x \equiv \sum_i a_i M_i y_i \pmod M$.
 
 ```python
 # 중국인의 나머지 정리
@@ -187,9 +187,9 @@ print("x:", crt(a, m))
 
 #### Successive Powers (60pt)
 
-주어진 12개의 값 `{588,665,216,113,642,4,836,114,851,492,819,237}`은 어떤 정수 $x$의 연속된 거듭제곱 $x^k, x^{k+1}, \dots$를 세 자리 소수 $p$로 나눈 나머지다. 코드 없이 손으로 풀었다 — 인접한 두 항의 비율은 전부 $x$로 같다는 점을 이용한다:
+주어진 12개의 값 `{588,665,216,113,642,4,836,114,851,492,819,237}`은 어떤 정수 $x$ 의 연속된 거듭제곱 $x^k, x^{k+1}, \dots$ 를 세 자리 소수 $p$ 로 나눈 나머지다. 코드 없이 손으로 풀었다 — 인접한 두 항의 비율은 전부 $x$ 로 같다는 점을 이용한다:
 
-연속한 두 식 $x^{k+i}\equiv a_i$, $x^{k+i+1}\equiv a_{i+1} \pmod p$를 나누면 $a_{i+1} \equiv a_i \cdot x \pmod p$이므로, 임의의 두 쌍에서 $x$를 소거하면 $p$를 좁힐 수 있는 합동식이 나온다. 예를 들어 $642\cdot x\equiv 4$와 $4\cdot x\equiv 836 \pmod p$ 두 식의 양변에 각각 $4$, $642$를 곱하면 $16\equiv 642\cdot836\pmod p$, 즉 $p \mid (642\cdot836-16)$. 주어진 값의 최댓값이 851이니 $p>851$이라는 조건까지 더하면 $642\cdot836-16=8\cdot67087$의 약수 중 851보다 큰 소수 하나로 $p$가 정해진다. $p$가 정해지면 $4x\equiv836\pmod p$를 $x$에 대해 풀어 $x$도 바로 나온다.
+연속한 두 식 $x^{k+i}\equiv a_i$, $x^{k+i+1}\equiv a_{i+1} \pmod p$ 를 나누면 $a_{i+1} \equiv a_i \cdot x \pmod p$ 이므로, 임의의 두 쌍에서 $x$ 를 소거하면 $p$ 를 좁힐 수 있는 합동식이 나온다. 예를 들어 $642\cdot x\equiv 4$ 와 $4\cdot x\equiv 836 \pmod p$ 두 식의 양변에 각각 $4$, $642$ 를 곱하면 $16\equiv 642\cdot836\pmod p$, 즉 $p \mid (642\cdot836-16)$. 주어진 값의 최댓값이 851이니 $p>851$ 이라는 조건까지 더하면 $642\cdot836-16=8\cdot67087$ 의 약수 중 851보다 큰 소수 하나로 $p$ 가 정해진다. $p$ 가 정해지면 $4x\equiv836\pmod p$ 를 $x$ 에 대해 풀어 $x$ 도 바로 나온다.
 
 ```
 588, 665, 216, 113, 642, 4, 836, 114, 851, 492, 819, 237 (mod p)
@@ -205,9 +205,9 @@ x^(k+5) ≡ 4,   x^(k+6) ≡ 836 =>  4·x ≡ 836 (mod p)
 ```
 {: file="successive_powers.md" }
 
-> 풀면서 깨달은 것: 합동식에서 소거법칙(cancellation law)은 보통 성립하지 않는다 — $ca\equiv cb\pmod m$이라고 아무때나 양변에서 $c$를 지워 $a\equiv b\pmod m$으로 줄일 수 있는 게 아니다. 하지만 $\gcd(c,m)=1$이면 $c$가 법 $m$에 대해 역원 $c^{-1}$을 가진다. 합동식은 양변에 같은 수를 더하고 빼고 곱하는 연산에 대해 그대로 성립하므로, $ca\equiv cb\pmod m$의 양변에 이 역원 $c^{-1}$을 곱하면 $a\equiv b\pmod m$을 바로 도출할 수 있다 — "양변을 $c$로 나눈다"는 말의 진짜 의미는 사실 "양변에 $c^{-1}$을 곱한다"이다. $\gcd(c,m)=d>1$이라 역원이 없는 경우는 소거가 안 되는 게 아니라, 법이 함께 줄어든다: $ca\equiv cb\pmod m \iff a\equiv b\pmod{m/d}$.
+> 풀면서 깨달은 것: 합동식에서 소거법칙(cancellation law)은 보통 성립하지 않는다 — $ca\equiv cb\pmod m$ 이라고 아무때나 양변에서 $c$ 를 지워 $a\equiv b\pmod m$ 으로 줄일 수 있는 게 아니다. 하지만 $\gcd(c,m)=1$ 이면 $c$ 가 법 $m$ 에 대해 역원 $c^{-1}$ 을 가진다. 합동식은 양변에 같은 수를 더하고 빼고 곱하는 연산에 대해 그대로 성립하므로, $ca\equiv cb\pmod m$ 의 양변에 이 역원 $c^{-1}$ 을 곱하면 $a\equiv b\pmod m$ 을 바로 도출할 수 있다 — "양변을 $c$ 로 나눈다"는 말의 진짜 의미는 사실 "양변에 $c^{-1}$ 을 곱한다"이다. $\gcd(c,m)=d>1$ 이라 역원이 없는 경우는 소거가 안 되는 게 아니라, 법이 함께 줄어든다: $ca\equiv cb\pmod m \iff a\equiv b\pmod{m/d}$.
 >
-> 이 문제에서 $4x\equiv836\pmod{919}$를 $x\equiv209$로 바로 줄일 수 있었던 건, $919$가 소수라서 $4\neq919$인 이상 자동으로 $\gcd(4,919)=1$이기 때문이다 — [General 글의 모듈러 연산 부분]({% post_url 2026-11-15-CryptohackGeneral %})에서 본 것처럼 법이 소수 $p$면 $U(p)=\{1,\dots,p-1\}$ 전체가 역원을 갖는 군이라(0이 아닌 모든 원소가 단위), 0이 아닌 수로는 항상 나눠도 안전하다. 반대로 법이 합성수였다면 나누는 수가 법과 서로소인지부터 먼저 확인해야 했을 것이다.
+> 이 문제에서 $4x\equiv836\pmod{919}$ 를 $x\equiv209$ 로 바로 줄일 수 있었던 건, $919$ 가 소수라서 $4\neq919$ 인 이상 자동으로 $\gcd(4,919)=1$ 이기 때문이다 — [General 글의 모듈러 연산 부분]({% post_url 2026-11-15-CryptohackGeneral %})에서 본 것처럼 법이 소수 $p$ 면 $U(p)=\{1,\dots,p-1\}$ 전체가 역원을 갖는 군이라(0이 아닌 모든 원소가 단위), 0이 아닌 수로는 항상 나눠도 안전하다. 반대로 법이 합성수였다면 나누는 수가 법과 서로소인지부터 먼저 확인해야 했을 것이다.
 {: .prompt-tip }
 
 **Flag**: `crypto{919,209}`
@@ -215,7 +215,7 @@ x^(k+5) ≡ 4,   x^(k+6) ≡ 836 =>  4·x ≡ 836 (mod p)
 
 ## 정리
 
-Modular Math 4문제를 전부 끝내면서 Legendre Symbol·Modular Square Root 두 문제가 $p \bmod 4$ 값에 따라 제곱근 공식이 완전히 갈린다는 걸 직접 코드로 비교해봤고, Successive Powers(Brainteasers Part 1)는 코드 없이 합동식만으로 $p,x$를 손으로 좁혀나가면서, "양변을 나눈다"는 연산이 사실은 역원을 곱하는 것이고 $\gcd$ 조건이 왜 필요한지까지 짚었다.
+Modular Math 4문제를 전부 끝내면서 Legendre Symbol·Modular Square Root 두 문제가 $p \bmod 4$ 값에 따라 제곱근 공식이 완전히 갈린다는 걸 직접 코드로 비교해봤고, Successive Powers(Brainteasers Part 1)는 코드 없이 합동식만으로 $p,x$ 를 손으로 좁혀나가면서, "양변을 나눈다"는 연산이 사실은 역원을 곱하는 것이고 $\gcd$ 조건이 왜 필요한지까지 짚었다.
 
 남은 건 Brainteasers Part 1 나머지 5문제(Common Ground, Adrien's Signs, Modular Binomials, Broken RSA, No Way Back Home), Brainteasers Part 2, Primes. 다음에 풀고 이어서 추가한다.
 

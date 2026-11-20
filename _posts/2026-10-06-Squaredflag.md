@@ -76,7 +76,7 @@ $$
 
 ## 풀이 시나리오
 
-1. `M * flag = result`를 선형방정식 $$ax + by = c$$ 꼴로 본다. ($$a = M$$, $$x = flag$$, $$b$$와 $$y$$는 0, $$c = result$$)
+1. `M * flag = result`를 선형방정식 $$ax + by = c$$ 꼴로 본다. ($$a = M$$, $$x = flag$$, $$b$$ 와 $$y$$ 는 0, $$c = result$$)
 2. SageMath의 `solve_right()`로 해를 구한다.
 3. 해의 마지막 4개가 0이므로, `DH{}` 형식 정보를 방정식으로 추가해 다시 해를 구한다.
 
